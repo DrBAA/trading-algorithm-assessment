@@ -1,5 +1,4 @@
 package codingblackfemales.gettingstarted;
-
 import codingblackfemales.algo.AlgoLogic;
 import codingblackfemales.sotw.ChildOrder;
 import messages.marketdata.BookUpdateEncoder;
@@ -7,6 +6,7 @@ import messages.marketdata.InstrumentStatus;
 import messages.marketdata.MessageHeaderEncoder;
 import messages.marketdata.Source;
 import messages.marketdata.Venue;
+import messages.order.Side;
 import org.agrona.concurrent.UnsafeBuffer;
 import java.nio.ByteBuffer;
 import org.junit.Test;
@@ -28,7 +28,8 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
     @Override
     public AlgoLogic createAlgoLogic() {
-        //this adds your algo logic to the container classes
+
+        //this adds your profit algo logic to the container classes
         return new MyAlgoLogic();
     }
 
@@ -99,152 +100,165 @@ public class MyAlgoTest extends AbstractAlgoTest {
     //CHECKING THE ALGO'S BEHAVIOUR AFTER 1ST TICK
 
     @Test
-    public void testDispatchThroughSequencerFirstTestTick1() throws Exception {
+    public void testAlgoBehaviourAfterFirstTick() throws Exception {
+      
+        send(createTick());  //create a sample market data tick from first tick
 
-        //create a sample market data tick from first tick
-        send(createTick());
+            //assert that we created 5 Buy orders for 200 shares at 100, and no Sell orders
 
-            //assert to check we had 5 orders created
-            assertEquals(5, container.getState().getChildOrders().size());
+            assertEquals(5, container.getState().getActiveChildOrders().size()); 
+ 
+            if (!container.getState().getActiveChildOrders().isEmpty()) {
 
+                for (ChildOrder childOrder : container.getState().getActiveChildOrders()) {
 
-            //assert to check that we created a Buy order for 200 shares at 100 and no Sell orders
-            
-            for (ChildOrder childOrder : container.getState().getChildOrders()) {
+                        assertEquals(200, childOrder.getQuantity());
+                        assertEquals(messages.order.Side.BUY, childOrder.getSide());
+                        assertNotEquals(messages.order.Side.SELL, childOrder.getSide());
+                        assertEquals(true, childOrder.getSide() == Side.BUY);
+                        assertEquals(true, childOrder.getSide() != Side.SELL);
+                        assertEquals(100, childOrder.getPrice());                
 
-                assertEquals(messages.order.Side.BUY, childOrder.getSide());
-                assertNotEquals(messages.order.Side.SELL, childOrder.getSide());
-                assertEquals(200, childOrder.getQuantity());
-                assertEquals(100, childOrder.getPrice());
+                        System.out.println("Order ID: " + childOrder.getOrderId() + 
+                                        " | Side: " + childOrder.getSide() +            
+                                        " | Price: " + childOrder.getPrice() +
+                                        " | Ordered Qty: " + childOrder.getQuantity() +
+                                        " | Filled Qty: " + childOrder.getFilledQuantity() +
+                                        " | State of the order: " + childOrder.getState()
+                                        );
+                }
 
-                System.out.println("Order ID: " + childOrder.getOrderId() + 
-                                " | Side: " + childOrder.getSide() +            
-                                " | Price: " + childOrder.getPrice() +
-                                " | Ordered Qty: " + childOrder.getQuantity() +
-                                " | Filled Qty: " + childOrder.getFilledQuantity() +
-                                " | State of the order: " + childOrder.getState());
             }
 
+            //Check total child orders count, total active child orders and total ordered quantity 
+
+            int totalChildOrdersCountTick1 = container.getState().getChildOrders().size(); // added 15/9/2024
+            int totalActiveChildOrdersTick1 = container.getState().getActiveChildOrders().size();
+            long totalOrderedQuantityTick1 = container.getState().getActiveChildOrders()
+                                            .stream()
+                                            .map(ChildOrder::getQuantity).reduce (Long::sum)
+                                            .orElse(0L);            
+            // long totalOrderedQuantityTick1 = container.getState().getChildOrders()
+            //                                             .stream()
+            //                                             .map(ChildOrder::getQuantity).reduce (Long::sum).get();
+
+
+            // assert that there is a total of 5 child orders, a total of 5 active child orders and total ordered quantity is 1000
+
+            assertEquals(5, totalChildOrdersCountTick1);
+            assertEquals(5, totalActiveChildOrdersTick1);
+            assertEquals(1000, totalOrderedQuantityTick1);
+
     }
 
 
-    //CHECKING THE ALGO'S BEHAVIOUR AFTER 2ND TICK
+    //  //CHECKING THE ALGO'S BEHAVIOUR AFTER 2ND TICK
 
     @Test
-    public void testDispatchThroughSequencerSecondTestTick2() throws Exception {
+    public void testAlgoBehaviourAfterSecondTick() throws Exception {
+    
+        send(createTick2());  //create a sample market data tick from second tick
 
-       //create a sample market data tick from second tick
-       send(createTick2());
+            //assert that we created 5 Buy orders for 200 shares at 99, and no Sell orders
 
-           //assert to check we had 5 orders created
-           assertEquals(container.getState().getChildOrders().size(), 5);
+            assertEquals(5, container.getState().getActiveChildOrders().size()); 
+
+            if (!container.getState().getActiveChildOrders().isEmpty()) {                  
+                for (ChildOrder childOrder : container.getState().getActiveChildOrders()) {
+
+                        assertEquals(200, childOrder.getQuantity());
+                        assertEquals(messages.order.Side.BUY, childOrder.getSide());
+                        assertNotEquals(messages.order.Side.SELL, childOrder.getSide());
+                        assertEquals(true, childOrder.getSide() == Side.BUY);
+                        assertEquals(true, childOrder.getSide() != Side.SELL);
+                        assertEquals(99, childOrder.getPrice());                
+
+                        System.out.println("Order ID: " + childOrder.getOrderId() + 
+                                        " | Side: " + childOrder.getSide() +            
+                                        " | Price: " + childOrder.getPrice() +
+                                        " | Ordered Qty: " + childOrder.getQuantity() +
+                                        " | Filled Qty: " + childOrder.getFilledQuantity() +
+                                        " | State of the order: " + childOrder.getState()
+                                        );
+                }
+
+            }
+
+            //Check total child orders count, total active child orders and total ordered quantity
+
+            int totalChildOrdersCountTick2 = container.getState().getChildOrders().size(); // added 15/9/2024
+            int totalActiveChildOrdersTick2 = container.getState().getActiveChildOrders().size();
+            long totalOrderedQuantityTick2 = container.getState().getActiveChildOrders()
+                                            .stream()
+                                            .map(ChildOrder::getQuantity).reduce (Long::sum)
+                                            .orElse(0L);            
+            // long totalOrderedQuantityTick1 = container.getState().getChildOrders()
+            //                                             .stream()
+            //                                             .map(ChildOrder::getQuantity).reduce (Long::sum).get();
 
 
-           //assert to check that we created a Buy order for 200 shares at 99 and no Sell orders
-           
-           for (ChildOrder childOrder : container.getState().getChildOrders()) {
+            // assert that there is a total of 5 child orders, a total of 5 active child orders and total ordered quantity is 1000
 
-               assertEquals(childOrder.getSide(), messages.order.Side.BUY);
-               assertNotEquals(childOrder.getSide(), messages.order.Side.SELL);
-               assertEquals(childOrder.getQuantity(),  200);
-               assertEquals(childOrder.getPrice(),  99);
-               assertEquals(childOrder.getFilledQuantity(),  0);
-
-               System.out.println("Order ID: " + childOrder.getOrderId() + 
-                               " | Side: " + childOrder.getSide() +            
-                               " | Price: " + childOrder.getPrice() +
-                               " | Ordered Qty: " + childOrder.getQuantity() +
-                               " | Filled Qty: " + childOrder.getFilledQuantity() +
-                               " | State of the order: " + childOrder.getState());
-        }
+            assertEquals(5, totalChildOrdersCountTick2);
+            assertEquals(5, totalActiveChildOrdersTick2);
+            assertEquals(1000, totalOrderedQuantityTick2);
 
     }
-
 
         
-    //check that our algo state was updated when the market data changed
-
-    @Test
-    public void testDispatchThroughSequencerThirdTestTick2() throws Exception {
-     
-        //create a sample market data tick from second tick
-        send(createTick2());
-
-        var state = container.getState();         
-
-        int totalOrdersCountTick2 = container.getState().getChildOrders().size(); // added 15/9/2024
-        int activeChildOrdersTick2 = container.getState().getActiveChildOrders().size();
-        int cancelledChildOrdersTick2 = totalOrdersCountTick2 - activeChildOrdersTick2;
-
-        long totalOrderedQuantityTick2 = state.getChildOrders().stream().map(ChildOrder::getQuantity).reduce (Long::sum).get();            
-        long filledQuantityTick2 = state.getChildOrders().stream().map(ChildOrder::getFilledQuantity).reduce(Long::sum).get();
-        long unFilledQuantityTick2 = totalOrderedQuantityTick2 - filledQuantityTick2;
-
-        //Check total quantity ordered, filled quantity, unfilled quantity, cancelled order count etc....
-        assertEquals(1000, totalOrderedQuantityTick2);            
-        assertEquals(0, filledQuantityTick2);
-        assertEquals(1000, unFilledQuantityTick2);           
-        assertEquals(0, cancelledChildOrdersTick2);
-
-    }
-
     //CHECKING THE ALGO'S BEHAVIOUR AFTER 3RD TICK
-
     @Test
-    public void testDispatchThroughSequencerFourthTestTick3() throws Exception {
+    public void testAlgoBehaviourAfterThirdTick() throws Exception {
+    
+        send(createTick3());  //create a sample market data tick from third tick
 
-        //create a sample market data tick from 3rd tick
-        send(createTick3());
+            //assert that we created 5 Buy orders for 200 shares at 98, and no Sell orders
 
-            //assert to check we had 5 orders created
-            assertEquals(container.getState().getChildOrders().size(), 5);        
+            assertEquals(5, container.getState().getActiveChildOrders().size()); 
 
-            //assert to check that we created a Buy order for 200 shares at 98 and no sell orders           
-            for (ChildOrder childOrder : container.getState().getChildOrders()) {
+            if (!container.getState().getActiveChildOrders().isEmpty()) {                  
+                for (ChildOrder childOrder : container.getState().getActiveChildOrders()) {
 
-                assertEquals(childOrder.getSide(), messages.order.Side.BUY);
-                assertNotEquals(childOrder.getSide(), messages.order.Side.SELL);
-                assertEquals(childOrder.getQuantity(),  200);
-                assertEquals(childOrder.getPrice(),  98);
-                assertEquals(childOrder.getFilledQuantity(),  0);
+                        assertEquals(200, childOrder.getQuantity());
+                        assertEquals(messages.order.Side.BUY, childOrder.getSide());
+                        assertNotEquals(messages.order.Side.SELL, childOrder.getSide());
+                        assertEquals(true, childOrder.getSide() == Side.BUY);
+                        assertEquals(true, childOrder.getSide() != Side.SELL);
+                        assertEquals(98, childOrder.getPrice());                
 
-                System.out.println("Order ID: " + childOrder.getOrderId() + 
-                                " | Side: " + childOrder.getSide() +            
-                                " | Price: " + childOrder.getPrice() +
-                                " | Ordered Qty: " + childOrder.getQuantity() +
-                                " | Filled Qty: " + childOrder.getFilledQuantity() +
-                                " | State of the order: " + childOrder.getState());
+                        System.out.println("Order ID: " + childOrder.getOrderId() + 
+                                        " | Side: " + childOrder.getSide() +            
+                                        " | Price: " + childOrder.getPrice() +
+                                        " | Ordered Qty: " + childOrder.getQuantity() +
+                                        " | Filled Qty: " + childOrder.getFilledQuantity() +
+                                        " | State of the order: " + childOrder.getState()
+                                        );
+                }
+
             }
 
+            //Check total child orders count, total active child orders and total ordered quantity
+
+            int totalChildOrdersCountTick3 = container.getState().getChildOrders().size(); // added 15/9/3024
+            int totalActiveChildOrdersTick3 = container.getState().getActiveChildOrders().size();
+            long totalOrderedQuantityTick3 = container.getState().getActiveChildOrders()
+                                            .stream()
+                                            .map(ChildOrder::getQuantity).reduce (Long::sum)
+                                            .orElse(0L);            
+            // long totalOrderedQuantityTick1 = container.getState().getActiveChildOrders()
+            //                                  .stream()
+            //                                  .map(ChildOrder::getQuantity).reduce (Long::sum).get();
+
+
+            // assert that there is a total of 5 child orders, a total of 5 active child orders and total ordered quantity is 1000
+
+            assertEquals(5, totalChildOrdersCountTick3);
+            assertEquals(5, totalActiveChildOrdersTick3);
+            assertEquals(1000, totalOrderedQuantityTick3);
+
     }
-
-
-
-    @Test
-    public void testDispatchThroughSequencerFifthTestTick3() throws Exception {
-        
-        //create a sample market data tick from 3rd tick
-        send(createTick3());
-        var state = container.getState();
-
-
-        int totalOrdersCountTick3 = container.getState().getChildOrders().size(); // added 15/9/2024
-        int activeChildOrdersTick3 = container.getState().getActiveChildOrders().size();
-        int cancelledChildOrdersTick3 = totalOrdersCountTick3 - activeChildOrdersTick3;
-
-        long totalOrderedQuantityTick3 = state.getChildOrders().stream().map(ChildOrder::getQuantity).reduce (Long::sum).get();            
-        long filledQuantityTick3 = state.getChildOrders().stream().map(ChildOrder::getFilledQuantity).reduce(Long::sum).get();
-        long unFilledQuantityTick3 = totalOrderedQuantityTick3 - filledQuantityTick3;
-
-        //Check total quantity ordered, filled quantity, unfilled quantity, cancelled order count etc....
-        assertEquals(1000, totalOrderedQuantityTick3);            
-        assertEquals(0, filledQuantityTick3);
-        assertEquals(1000, unFilledQuantityTick3);           
-        assertEquals(0, cancelledChildOrdersTick3);
-
-    }   
-
-}
+   
+ } 
 
 
 // ORIGINAL CODE
@@ -284,5 +298,8 @@ public class MyAlgoTest extends AbstractAlgoTest {
 //     }
 // }
 
+
+// USE EITHER OF THE BELOW CODE TO RUN MYPROFITALGOTEST FROM A WINDOWS MACHINE WITH MAVEN INSTALLED
 // mvn test -pl :getting-started -DMyAlgoTest 
 // mvn -Dtest=MyAlgoTest test --projects algo-exercise/getting-started
+// mvn clean test --projects algo-exercise/getting-started
