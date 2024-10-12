@@ -1,4 +1,5 @@
 package codingblackfemales.gettingstarted;
+
 import codingblackfemales.algo.AlgoLogic;
 import codingblackfemales.sotw.ChildOrder;
 import messages.marketdata.BookUpdateEncoder;
@@ -7,6 +8,7 @@ import messages.marketdata.MessageHeaderEncoder;
 import messages.marketdata.Source;
 import messages.marketdata.Venue;
 import messages.order.Side;
+
 import org.agrona.concurrent.UnsafeBuffer;
 import java.nio.ByteBuffer;
 import org.junit.Test;
@@ -28,8 +30,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
     @Override
     public AlgoLogic createAlgoLogic() {
-
-        //this adds your profit algo logic to the container classes
+        //this adds your algo logic to the container classes
         return new MyAlgoLogic();
     }
 
@@ -105,7 +106,6 @@ public class MyAlgoTest extends AbstractAlgoTest {
         send(createTick());  //create a sample market data tick from first tick
 
             //assert that we created 5 Buy orders for 200 shares at 100, and no Sell orders
-
             assertEquals(5, container.getState().getActiveChildOrders().size()); 
  
             if (!container.getState().getActiveChildOrders().isEmpty()) {
@@ -130,21 +130,19 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
             }
 
-            //Check total child orders count, total active child orders and total ordered quantity 
-
+            //Check total child orders count, total active child orders and total ordered quantity
             int totalChildOrdersCountTick1 = container.getState().getChildOrders().size(); // added 15/9/2024
             int totalActiveChildOrdersTick1 = container.getState().getActiveChildOrders().size();
             long totalOrderedQuantityTick1 = container.getState().getActiveChildOrders()
                                             .stream()
                                             .map(ChildOrder::getQuantity).reduce (Long::sum)
                                             .orElse(0L);            
-            // long totalOrderedQuantityTick1 = container.getState().getChildOrders()
+            // long totalOrderedQuantityTick1 = container.getState().getActiveChildOrders()
             //                                             .stream()
             //                                             .map(ChildOrder::getQuantity).reduce (Long::sum).get();
 
 
             // assert that there is a total of 5 child orders, a total of 5 active child orders and total ordered quantity is 1000
-
             assertEquals(5, totalChildOrdersCountTick1);
             assertEquals(5, totalActiveChildOrdersTick1);
             assertEquals(1000, totalOrderedQuantityTick1);
@@ -152,15 +150,13 @@ public class MyAlgoTest extends AbstractAlgoTest {
     }
 
 
-    //  //CHECKING THE ALGO'S BEHAVIOUR AFTER 2ND TICK
-
+    //CHECKING THE ALGO'S BEHAVIOUR AFTER 2ND TICK
     @Test
     public void testAlgoBehaviourAfterSecondTick() throws Exception {
     
         send(createTick2());  //create a sample market data tick from second tick
 
             //assert that we created 5 Buy orders for 200 shares at 99, and no Sell orders
-
             assertEquals(5, container.getState().getActiveChildOrders().size()); 
 
             if (!container.getState().getActiveChildOrders().isEmpty()) {                  
@@ -185,20 +181,15 @@ public class MyAlgoTest extends AbstractAlgoTest {
             }
 
             //Check total child orders count, total active child orders and total ordered quantity
-
             int totalChildOrdersCountTick2 = container.getState().getChildOrders().size(); // added 15/9/2024
             int totalActiveChildOrdersTick2 = container.getState().getActiveChildOrders().size();
             long totalOrderedQuantityTick2 = container.getState().getActiveChildOrders()
                                             .stream()
                                             .map(ChildOrder::getQuantity).reduce (Long::sum)
-                                            .orElse(0L);            
-            // long totalOrderedQuantityTick1 = container.getState().getChildOrders()
-            //                                             .stream()
-            //                                             .map(ChildOrder::getQuantity).reduce (Long::sum).get();
+                                            .orElse(0L);
 
 
             // assert that there is a total of 5 child orders, a total of 5 active child orders and total ordered quantity is 1000
-
             assertEquals(5, totalChildOrdersCountTick2);
             assertEquals(5, totalActiveChildOrdersTick2);
             assertEquals(1000, totalOrderedQuantityTick2);
@@ -213,7 +204,6 @@ public class MyAlgoTest extends AbstractAlgoTest {
         send(createTick3());  //create a sample market data tick from third tick
 
             //assert that we created 5 Buy orders for 200 shares at 98, and no Sell orders
-
             assertEquals(5, container.getState().getActiveChildOrders().size()); 
 
             if (!container.getState().getActiveChildOrders().isEmpty()) {                  
@@ -238,27 +228,22 @@ public class MyAlgoTest extends AbstractAlgoTest {
             }
 
             //Check total child orders count, total active child orders and total ordered quantity
-
             int totalChildOrdersCountTick3 = container.getState().getChildOrders().size(); // added 15/9/3024
             int totalActiveChildOrdersTick3 = container.getState().getActiveChildOrders().size();
             long totalOrderedQuantityTick3 = container.getState().getActiveChildOrders()
                                             .stream()
                                             .map(ChildOrder::getQuantity).reduce (Long::sum)
-                                            .orElse(0L);            
-            // long totalOrderedQuantityTick1 = container.getState().getActiveChildOrders()
-            //                                  .stream()
-            //                                  .map(ChildOrder::getQuantity).reduce (Long::sum).get();
+                                            .orElse(0L);
 
 
             // assert that there is a total of 5 child orders, a total of 5 active child orders and total ordered quantity is 1000
-
             assertEquals(5, totalChildOrdersCountTick3);
             assertEquals(5, totalActiveChildOrdersTick3);
             assertEquals(1000, totalOrderedQuantityTick3);
 
-    }
-   
- } 
+    }   
+
+} 
 
 
 // ORIGINAL CODE
