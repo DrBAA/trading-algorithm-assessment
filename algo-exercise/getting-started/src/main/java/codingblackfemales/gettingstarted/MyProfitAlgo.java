@@ -14,12 +14,14 @@ import messages.order.Side;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// 8TH AND FINAL CODE - GOOD CODE
-// TRADING ALGO THAT CREATES AND CANCELS AN ORDER BASED ON THE SPREAD NARROWING AND EXPANDING
+// 8TH AND FINAL CODE
+// TRADING ALGO THAT CREATES BUY ORDERS AND CANCELS AN ORDER BASED ON THE SPREAD NARROWING AND EXPANDING
 // THE ALGO CAN ALSO MAKE A PROFIT BY BUYING SHARES WHEN PRICES ARE LOW AND SELLING THEM WHEN PRICES ARE HIGH
-// IF THE SPREAD NARROWS TO OR BELOW THE SET THRESHOLD CREATE UP TO 5 ORDERS FOR 200 SHARES PER ORDER,
-// IF THE SPREAD WIDENS TO OR ABOVE THE SET THRESHOLD, CANCEL ANY UNFILLED OR PARTIALLY FILLED ORDERS
-// IF THE BID AND ASK PRICES GO ABOVE YOUR PREVIOUS BOUGHT PRICE BY A CERTAIN THRESHOLD, SELL THE SHARES FOR A PROFIT
+// IF THE SPREAD NARROWS TO OR BELOW THE SET THRESHOLD, CREATE UP TO 5 BUY ORDERS FOR 200 SHARES PER ORDER,
+// FOR EACH UNFILLED/PARTIALLY FILLED BUY ORDER, IF THE BEST ASK PRICE IS ABOVE THE BUY PRICE FOR THAT SPECIFIC
+// ORDER, PLUS A SET NUMBER OF POINTS, CANCEL THAT  ORDER
+// IF THE BID AND ASK PRICES GO ABOVE YOUR PREVIOUS BOUGHT PRICE BY A CERTAIN THRESHOLD, SELL THE SHARES AT
+// CURRENT BEST BID PRICE WITH THE AIM OF MAKING A PROFIT
 
 
 public class MyProfitAlgo implements AlgoLogic {
@@ -83,54 +85,55 @@ public class MyProfitAlgo implements AlgoLogic {
 
         // CONDITIONS TO CANCEL A BUY ORDER        
 
-        long orderId;
-        Side orderSide;        
-        long quantityOrdered;        
-        long orderPrice;
-        long orderFilledQuantity;
-        long unfilledQuantity;
+        long thisOrderId;
+        Side thisOrderSide;        
+        long thisOrderQuantity;        
+        long thisOrderPrice;
+        long thisOrderFilledQuantity;
+        long thisOrderUnfilledQuantity;
 
 
         // Define a price reversal threshold (in price points)            
-        long priceReversalThreshold = 10L;  // was 10L          
+        long priceReversalThreshold = 10L;
 
         // amended code - now cancelling partially filled or unfilled orders
         if (!activeChildOrders.isEmpty()) {                      
 
-            for (ChildOrder order : activeChildOrders) {
-                if (order.getSide() == Side.BUY) {
-                    orderId = order.getOrderId();
-                    orderSide = order.getSide();
-                    quantityOrdered = order.getQuantity();                    
-                    orderPrice = order.getPrice();
-                    orderFilledQuantity = order.getFilledQuantity();
+            for (ChildOrder thisOrder : activeChildOrders) {
+                if (thisOrder.getSide() == Side.BUY) {
+                    thisOrderId = thisOrder.getOrderId();
+                    thisOrderSide = thisOrder.getSide();
+                    thisOrderQuantity = thisOrder.getQuantity();                    
+                    thisOrderPrice = thisOrder.getPrice();
+                    thisOrderFilledQuantity = thisOrder.getFilledQuantity();
 
                         // Check if the order is partially filled or not filled at all
-                        if (orderFilledQuantity < quantityOrdered) {
+                        if (thisOrderFilledQuantity < thisOrderQuantity) {
 
                                 // Calculate the remaining unfilled quantity
-                                unfilledQuantity = quantityOrdered - orderFilledQuantity;
+                                thisOrderUnfilledQuantity = thisOrderQuantity - thisOrderFilledQuantity;
 
                                 // Log the details of the unfilled or partially filled orders
-                                logger.info("[PROFITALGO] CANCEL CONDITIONS - Partially filled or Non filled order found. " +
-                                            " Order ID: " + orderId +
-                                            " Side: " + orderSide +
-                                            ", Ordered Qty: " + quantityOrdered +
-                                            ", Price: " + orderPrice +                                            
-                                            ", Filled Qty: " + orderFilledQuantity  +
-                                            ", Unfilled Qty: " + unfilledQuantity);
+                                logger.info("[MYALGO] CANCEL CONDITIONS - Partially filled or Non filled order found. " +
+                                            " Order ID: " + thisOrderId +
+                                            " Side: " + thisOrderSide +
+                                            ", Ordered Qty: " + thisOrderQuantity +
+                                            ", Price: " + thisOrderPrice +                                            
+                                            ", Filled Qty: " + thisOrderFilledQuantity  +
+                                            ", Unfilled Qty: " + thisOrderUnfilledQuantity);
 
                                 // Cancel the unfilled part of the order if the ASK price moves up by or above the defined threshold
-                                if (bestAskPrice >= (orderPrice + priceReversalThreshold)) {
-                                        logger.info("[PROFITALGO] CANCEL CONDITIONS - price reversal threshold is " + priceReversalThreshold + " points.");
-                                        logger.info("[PROFITALGO] CANCEL CONDITIONS - Ask price moved against buy order. " +
-                                                    " Cancelling order ID: " + orderId +
-                                                    ", Unfilled Qty: " + (unfilledQuantity));
-                                    return new CancelChildOrder(order);
+                                if (bestAskPrice >= (thisOrderPrice + priceReversalThreshold)) {
+                                    logger.info("[MYALGO] CANCEL CONDITIONS - BesAsk is: " + bestAsk + " thisOrderPrice is  : " + thisOrderPrice);
+                                    logger.info("[MYALGO] CANCEL CONDITIONS - price reversal threshold is " + priceReversalThreshold + " points.");
+                                    logger.info("[MYALGO] CANCEL CONDITIONS - Ask price moved against buy order. " +
+                                                " Cancelling order ID: " + thisOrderId +
+                                                ", Unfilled Qty: " + (thisOrderUnfilledQuantity));
+                                    return new CancelChildOrder(thisOrder);
                                 }
                                 else {
                                     // If the ask price has not moved beyond the threshold, log that the order remains active
-                                    logger.info("[PROFITALGO] CANCEL CONDITIONS  - Ask price has not moved above threshold. Buy order to remain active");
+                                    logger.info("[MYALGO] CANCEL CONDITIONS  - Ask price is stil under threshold. Buy order to remain active");
                                 }
                         }
                         else {
