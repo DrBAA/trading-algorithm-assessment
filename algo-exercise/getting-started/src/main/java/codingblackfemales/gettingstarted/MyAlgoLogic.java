@@ -15,12 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // 8TH AND FINAL CODE
-// THIS ALGO CREATES AND CANCELS CHILD ORDERS BASED ON THE SPREAD NARROWING AND EXPANDING
-// IF THE SPREAD NARROWS TO OR BELOW 5 POINTS, CREATE 5 ORDERS FOR 200 SHARES PER ORDER,
-// FOR EACH UNFILLED/PARTIALLY FILLED ORDER, IF THE BEST ASK PRICE IS ABOVE THE BUY PRICE FOR THAT
-// PLUS 7 POINTS, CANCEL THAT  ORDER
-// RESULTS - BASED ON 9 MARKET DATA TICKS, THE ALGO CREATED 8 BUY ORDERS, GOT 2 FULLY FILLED ORDERS,
-// 1 PARTIAL FILLED, CANCELLED 5 ORDERS AND HAS 3 ACTIVE ORDERS REMAINING (1 NOT FILLED)
+// THIS ALGO CREATES BUY ORDERS BASED ON THE SPREAD NARROWING AND CANCELS AN ORDER BASED ON CERTAIN CONDITIONS
+// IF THE SPREAD NARROWS TO BELOW OR EQUALS TO 5 PRICE POINTS, CREATE UP TO 5 BUY ORDERS FOR 200 SHARES PER ORDER.
+// FOR EACH UNFILLED/PARTIALLY FILLED BUY ORDER, IF THE BEST ASK PRICE IS ABOVE OR EQUALS TO THE BUY
+// PRICE FOR THAT SPECIFIC ORDER PLUS 2 PRICE POINTS, CANCEL THAT  ORDER.
+
+// RESULTS - BASED ON 9 MARKET DATA TICKS (2 FROM AbstractAlgoBackTest.java AND THE OTHER 7 FROM MyAlgoBackTest.java,
+// THE ALGO CREATED 5 BUY ORDERS INITIALLY, GOT 2 FULLY FILLED ORDERS AND 1 PARTIAL FILL
+// AFTER THAT THE ALGO CREATED 1 BUY ORDER AT A TIME BUT GOT NO MORE FILLS. THE ALGO ALSO CANCELLED 5 ORDERS.
+// THE CURRENT STATE HAS 3 ACTIVE ORDERS REMAINING (2 FULLY FILLED, 1 NOT FILLED AT ALL) AND 5 CANCELLED.
 
 
 public class MyAlgoLogic implements AlgoLogic {
@@ -85,12 +88,12 @@ public class MyAlgoLogic implements AlgoLogic {
 
         // CONDITIONS TO CANCEL A BUY ORDER        
 
-        long orderId;
-        Side orderSide;        
-        long orderQuantity;        
-        long eachOrderPrice;
-        long orderFilledQuantity;
-        long unfilledQuantity;
+        long thisOrderId;
+        Side thisOrderSide;        
+        long thisOrderQuantity;        
+        long thisOrderPrice;
+        long thisOrderFilledQuantity;
+        long thisOrderUnfilledQuantity;
 
 
         // Define a price reversal threshold (in price points)            
@@ -99,37 +102,37 @@ public class MyAlgoLogic implements AlgoLogic {
         // amended code - now cancelling partially filled or unfilled orders
         if (!activeChildOrders.isEmpty()) {                      
 
-            for (ChildOrder order : activeChildOrders) {
-                if (order.getSide() == Side.BUY) {
-                    orderId = order.getOrderId();
-                    orderSide = order.getSide();
-                    orderQuantity = order.getQuantity();                    
-                    eachOrderPrice = order.getPrice();
-                    orderFilledQuantity = order.getFilledQuantity();
+            for (ChildOrder thisOrder : activeChildOrders) {
+                if (thisOrder.getSide() == Side.BUY) {
+                    thisOrderId = thisOrder.getOrderId();
+                    thisOrderSide = thisOrder.getSide();
+                    thisOrderQuantity = thisOrder.getQuantity();                    
+                    thisOrderPrice = thisOrder.getPrice();
+                    thisOrderFilledQuantity = thisOrder.getFilledQuantity();
 
                         // Check if the order is partially filled or not filled at all
-                        if (orderFilledQuantity < orderQuantity) {
+                        if (thisOrderFilledQuantity < thisOrderQuantity) {
 
                                 // Calculate the remaining unfilled quantity
-                                unfilledQuantity = orderQuantity - orderFilledQuantity;
+                                thisOrderUnfilledQuantity = thisOrderQuantity - thisOrderFilledQuantity;
 
                                 // Log the details of the unfilled or partially filled orders
                                 logger.info("[MYALGO] CANCEL CONDITIONS - Partially filled or Non filled order found. " +
-                                            " Order ID: " + orderId +
-                                            " Side: " + orderSide +
-                                            ", Ordered Qty: " + orderQuantity +
-                                            ", Price: " + eachOrderPrice +                                            
-                                            ", Filled Qty: " + orderFilledQuantity  +
-                                            ", Unfilled Qty: " + unfilledQuantity);
+                                            " Order ID: " + thisOrderId +
+                                            " Side: " + thisOrderSide +
+                                            ", Ordered Qty: " + thisOrderQuantity +
+                                            ", Price: " + thisOrderPrice +                                            
+                                            ", Filled Qty: " + thisOrderFilledQuantity  +
+                                            ", Unfilled Qty: " + thisOrderUnfilledQuantity);
 
                                 // Cancel the unfilled part of the order if the ASK price moves up by or above the defined threshold
-                                if (bestAskPrice >= (eachOrderPrice + priceReversalThreshold)) {
-                                    logger.info("[MYALGO] CANCEL CONDITIONS - BesAsk is: " + bestAsk + " OrderPrice: " + eachOrderPrice);
+                                if (bestAskPrice >= (thisOrderPrice + priceReversalThreshold)) {
+                                    logger.info("[MYALGO] CANCEL CONDITIONS - BesAsk is: " + bestAsk + " thisOrderPrice is  : " + thisOrderPrice);
                                     logger.info("[MYALGO] CANCEL CONDITIONS - price reversal threshold is " + priceReversalThreshold + " points.");
                                     logger.info("[MYALGO] CANCEL CONDITIONS - Ask price moved against buy order. " +
-                                                " Cancelling order ID: " + orderId +
-                                                ", Unfilled Qty: " + (unfilledQuantity));
-                                    return new CancelChildOrder(order);
+                                                " Cancelling order ID: " + thisOrderId +
+                                                ", Unfilled Qty: " + (thisOrderUnfilledQuantity));
+                                    return new CancelChildOrder(thisOrder);
                                 }
                                 else {
                                     // If the ask price has not moved beyond the threshold, log that the order remains active
