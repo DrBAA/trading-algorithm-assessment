@@ -66,11 +66,12 @@ public class MyAlgoLogic implements AlgoLogic {
             final long buyQuantity = 200L;            
 
             if (spread <= spreadThreshold) {
-                logger.info("[MYALGO] BUY CONDITIONS - Spread is " + spread + " points.");
-                logger.info("[MYALGO] BUY CONDITIONS - Best Bid Qty " + bestBidQuantity + " units, " + "BestBid " + bestBidPrice);
-                logger.info("[MYALGO] BUY CONDITIONS - Best Ask Qty " + bestAskQuantity + " units, " + "BestAsk " + bestAskPrice);
-                logger.info("BUY CONDITIONS - [MYALGO] has " + activeChildOrders.size() + " active child orders. " +
-                            " Spread is below threshold. Creating a buy order for " + buyQuantity + " units @ " + bestBidPrice);
+                    logger.info("[MYALGO] BUY CONDITIONS - Spread is " + spread + " points.");
+                    logger.info("[MYALGO] BUY CONDITIONS - Best Bid Qty " + bestBidQuantity + " units, " + "BestBid " + bestBidPrice);
+                    logger.info("[MYALGO] BUY CONDITIONS - Best Ask Qty " + bestAskQuantity + " units, " + "BestAsk " + bestAskPrice);
+                    logger.info("BUY CONDITIONS - [MYALGO] has " + activeChildOrders.size() + " active child orders. " +
+                                " Spread is below threshold. Creating a buy order for " + buyQuantity + " units @ " + bestBidPrice);
+
                 return new CreateChildOrder(Side.BUY, buyQuantity, bestBidPrice);
             }
             else {
@@ -130,6 +131,7 @@ public class MyAlgoLogic implements AlgoLogic {
                             logger.info("[MYALGO] CANCEL CONDITIONS - Ask price moved against buy order. " +
                                         " Cancelling order ID: " + theOrderId +
                                         ", Unfilled Qty: " + (theOrderUnfilledQuantity));
+
                         return new CancelChildOrder(theOrder);
                         
                     }
