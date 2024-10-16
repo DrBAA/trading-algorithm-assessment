@@ -22,7 +22,7 @@ body {
 .marketDepthPanel-table, 
 .marketDepthPanel-table th, 
 .marketDepthPanel-table td {
-    border: 1px solid #d3d3d3; /* Solid black borders between all cells */
+    border: 1px solid #d3d3d3; /* Solid grey borders between all cells */
     border-collapse: collapse; /* Collapse borders for cleaner look. Avoid double borders between cells */
 }
 
@@ -44,7 +44,7 @@ body {
 /* Right align the data cells only */
 
 .marketDepthPanel td {
-    padding: 0 10px; /* was 30 */
+    padding: 0 0; /* was 0 30; */
     text-align: right; /* Aligns data cells to the right*/
 }
 
@@ -79,7 +79,7 @@ body {
 
 /* Right-align all quantities in the Bid column (2nd column in tbody) */
 .marketDepthPanel-table td:nth-child(2) {
-    padding-right: 5px;
+    /*padding-right: 5px;*/
     text-align: right;
 }
 
@@ -114,7 +114,7 @@ body {
 /* Left-align the data in the 5th column (Ask Quantity) */
 .marketDepthPanel-table td:nth-child(5) {
     text-align: left;
-    padding-left: 5px;
+    /*padding-left: 5px;*/
 }
 
 /* Force the Ask heading to be centered */
