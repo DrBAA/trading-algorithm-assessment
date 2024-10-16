@@ -39,11 +39,11 @@
 
 /* Blue color for up arrow */
 .arrow.up {
-    color: blue; /* Color for down arrow */
+    color: black; /* Color for down arrow */
 }
 
 
 /* Red color for down arrow */
 .arrow.down {
-    color: red; /* Color for up arrow */
+    color: black; /* Color for up arrow */
 }

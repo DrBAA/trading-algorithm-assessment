@@ -9,6 +9,7 @@ interface MarketDepthPanelProps {
 }
 
 export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
+
   // State to store previous prices for each row
   const [previousPrices, setPreviousPrices] = useState<{ [key: number]: { bid: number; offer: number } }>({});
 
@@ -25,6 +26,7 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
     setPreviousPrices(newPreviousPrices);
   }, [data]);
 
+  
   return (
     <div className='marketDepthPanel'>
       <table className="marketDepthPanel-table">
@@ -43,7 +45,8 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => {
+        {data.map((row, index) => {
+
             // Compare current and previous prices
             const prevBid = previousPrices[index]?.bid || row.bid;
             const prevOffer = previousPrices[index]?.offer || row.offer;
@@ -51,10 +54,41 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
             const bidArrowDirection = row.bid > prevBid ? 'up' : 'down';
             const offerArrowDirection = row.offer > prevOffer ? 'up' : 'down';
 
+            // Calculate the maximum bid/ask quantity
+            const maxQuantity = Math.max(...data.map(row => Math.max(row.bidQuantity, row.offerQuantity)));
+            
+            // Dynamically calculate the bid and ask columns width based on quantity and add extra width
+
+            const extraPaddingBidSide = 50; // adding extra width    
+            const bidWidth = (row.bidQuantity / maxQuantity) * 150 - extraPaddingBidSide;
+
+            const extraPaddingAskSide = 25; // adding extra width            
+            const askWidth = (row.offerQuantity / maxQuantity) * 100 + extraPaddingAskSide;            
+
+            // Calculate background width dynamically based on the row index
+            const totalRows = data.length;
+            const backgroundWidth = ((index + 1) / totalRows) * 100; // Background width decreases as rows go up
+            // const backgroundWidth = ((totalRows - index) / totalRows) * 100;
+            //const backgroundWidth = 80 + ((index / totalRows) * 20);       
+
             return (
               <tr key={index}>
                 <td>{row.level}</td>
-                <td>{row.bidQuantity}</td>
+
+                {/* Bid Quantity with background color and dynamic width */}
+                <td>
+                  <span
+                    className="bid-quantity"
+                    style={{ padding: '0 5px',
+                      backgroundColor: 'blue', // Adjust for bid side color
+                      width: `${bidWidth}%`, // Dynamic width
+                      //width: `${backgroundWidth}%`, // Dynamic width
+                      display: 'inline-block',
+                    }} 
+                  >
+                    {row.bidQuantity}
+                  </span>
+                </td>              
 
                 {/* Bid Price with dynamic arrow */}
                 <td className="price-cell">
@@ -72,7 +106,21 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
                   </span>
                 </td>
 
-                <td>{row.offerQuantity}</td>
+                {/* Ask Quantity with background color and dynamic width */}
+                <td>
+                  <span
+                    className="ask-quantity"
+                    style={{ padding: '0 5px',
+                      backgroundColor: 'red', // Adjust for ask side color
+                      width: `${askWidth}%`, // Dynamic width
+                      //width: `${backgroundWidth}%`, // Dynamic width
+                      display: 'inline-block',
+                    }}
+                  >
+                    {row.offerQuantity}
+                  </span>
+                </td>
+
               </tr>
             );
           })}
