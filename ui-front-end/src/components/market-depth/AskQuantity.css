@@ -1,14 +1,3 @@
-/* Background color for Bid Quantity */
-.bid-quantity {
-    background-color: blue; /* Blue background for bid */
-    color: white; /* White text for contrast */
-    /*padding: 2px 8px; */ /* Padding to add space around the quantity */
-    /*padding-left: 20px; */ /* Extra padding for the left of bid quantities */
-    /*border-radius: 4px;*/ /* Optional: Rounded corners for a cleaner look */
-    display: inline-block; /* Ensure the background only applies to the text and not the entire cell */
-    text-align: right; /* Ensure the text stays right aligned */
-}
-
 /* Background color for Ask Quantity */
 .ask-quantity {
     background-color: red; /* Red background for ask */

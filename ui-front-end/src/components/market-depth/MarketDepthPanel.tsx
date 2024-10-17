@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
+
+import { MarketDepthRow } from './useMarketDepthData';
+import './MarketDepthPanel.css';
 import { Arrow } from './Arrow';
 import './Arrow.css';
-import './MarketDepthPanel.css';
-import './AskQuantity.css';
-import { MarketDepthRow } from './useMarketDepthData';
 import { AskQuantity } from './AskQuantity';
+import './AskQuantity.css';
+import { BidQuantity } from './BidQuantity';
+import './BidQuantity.css';
+
+
 
 interface MarketDepthPanelProps {
   data: MarketDepthRow[];
@@ -77,19 +82,9 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
               <tr key={index}>
                 <td>{row.level}</td>
 
-                {/* Bid Quantity with background color and dynamic width */}
+                {/* Bid Quantity with dynamic width*/}
                 <td>
-                  <span
-                    className="bid-quantity"
-                    style={{ padding: '0 5px',
-                      backgroundColor: 'blue', // Adjust for bid side color
-                      width: `${bidWidth}%`, // Dynamic width
-                      // width: `${backgroundWidth}%`, // Dynamic width
-                      display: 'inline-block',
-                    }} 
-                  >
-                    {row.bidQuantity}
-                  </span>
+                  <BidQuantity bidQuantity={row.bidQuantity} bidWidth={bidWidth} />
                 </td>              
 
                 {/* Bid Price with dynamic arrow */}
