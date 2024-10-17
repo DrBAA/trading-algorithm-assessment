@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Arrow } from './Arrow';
 import './Arrow.css';
 import './MarketDepthPanel.css';
+import './AskQuantity.css';
 import { MarketDepthRow } from './useMarketDepthData';
+import { AskQuantity } from './AskQuantity';
 
 interface MarketDepthPanelProps {
   data: MarketDepthRow[];
@@ -106,21 +108,10 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
                   </span>
                 </td>
 
-                {/* Ask Quantity with background color and dynamic width */}
+                {/* Ask Quantity with dynamic width*/}
                 <td>
-                  <span
-                    className="ask-quantity"
-                    style={{ padding: '0 5px',
-                      backgroundColor: 'red', // Adjust for ask side color
-                      width: `${askWidth}%`, // Dynamic width
-                      //width: `${backgroundWidth}%`, // Dynamic width
-                      display: 'inline-block',
-                    }}
-                  >
-                    {row.offerQuantity}
-                  </span>
+                  <AskQuantity askQuantity={row.offerQuantity} askWidth={askWidth} />
                 </td>
-
               </tr>
             );
           })}
