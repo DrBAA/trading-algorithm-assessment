@@ -1,6 +1,8 @@
+import './AskQuantity.css';
+
 // defining an interface to ensure that the AskQuantity component can only accept the correct
 // types of props i.e a number in this case. this prevents the wrong data type being
-// accidentally passed to your the component. If any other type is passed (like a string or boolean),
+// accidentally passed to the component. If any other type is passed (like a string or boolean),
 // TypeScript will throw an error, preventing potential runtime errors
 
 interface AskQuantityProps {
@@ -8,7 +10,7 @@ interface AskQuantityProps {
   askWidth: number;
 }
 
-//declaring a new functional component called AskQuantity - with background color and dynamic width
+//declaring a new functional component (AskQuantity) - with background color and dynamic width
 //The function receives the props (askQuantity and askWidth), and then returns JSX
 //"export" means this component is being exported, which makes it available for import and use in other files
 
@@ -28,6 +30,8 @@ export const AskQuantity = ({ askQuantity, askWidth }: AskQuantityProps) => {
     </span>
   );
 };
+
+
 
 // AMMENDMENTS - 18/10/2024
 // Refactored the code on the line 12 "export const AskQuantity: React.FC<AskQuantityProps> = ({ askQuantity, askWidth }) => {" 
