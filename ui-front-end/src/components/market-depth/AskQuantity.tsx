@@ -41,5 +41,5 @@ export const AskQuantity = ({ askQuantity, askWidth }: AskQuantityProps) => {
 // Also removed the line "import React from 'react';". This is because the project is using React 18. After React 17 or higher,
 // and TypeScript is properly configured, we don't need to explicitly import React anymore to use JSX syntax.
 
-// removed the word "exportS on the line "export interface AskQuantityProps {"
+// removed the word "export on the line "export interface AskQuantityProps {"
 // this is because the interface is only used locally
