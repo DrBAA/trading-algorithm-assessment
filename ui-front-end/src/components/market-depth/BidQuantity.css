@@ -2,6 +2,7 @@
 .bid-quantity {
     background-color: blue; /* Blue background for bid */
     color: white; /* White text for contrast */
+    font-weight: bold; /* Make the arrow bold (optional for more thickness) */
     /*padding: 2px 8px; */ /* Padding to add space around the quantity */
     /*padding-left: 20px; */ /* Extra padding for the left of bid quantities */
     /*border-radius: 4px;*/ /* Optional: Rounded corners for a cleaner look */

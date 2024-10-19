@@ -37,13 +37,13 @@
 }
 
 
-/* Blue color for up arrow */
+/* Black color for up arrow */
 .arrow.up {
-    color: black; /* Color for down arrow */
+    color: black; 
 }
 
 
-/* Red color for down arrow */
+/* Black color for down arrow */
 .arrow.down {
-    color: black; /* Color for up arrow */
+    color: black; 
 }
