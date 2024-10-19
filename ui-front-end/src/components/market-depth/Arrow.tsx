@@ -8,7 +8,8 @@ interface ArrowProps {
 export const Arrow: React.FC<ArrowProps> = ({ direction }) => {
   return (
     <span className={`arrow ${direction}`}>
-      {direction === 'up' ? '↑' : '↓'}
+      {/*{direction === 'up' ? '↑' : '↓'}*/}
+      {direction === 'up' ? "\u2191" : "\u2193"}      
     </span>
   );
 };

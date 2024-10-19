@@ -32,7 +32,7 @@ body{
     max-width: none !important;
     border: 2px solid #000; /* Outer border for the entire table, including the bottom */
     border-collapse: collapse;
-    table-layout: fixed; /* Ensure columns respect set widths - ADDED 29/9/24*/
+    /*table-layout: fixed; /* Ensure columns respect set widths - ADDED 29/9/24*/
 }
 
 /* Force the Ask heading to be centered */

@@ -25,8 +25,8 @@ import { schemas } from "../../data/algo-schemas";
 export const MarketDepthFeature = () => {
   const data = useMarketDepthData(schemas.prices); // Fetch market depth data using the hook
   return (
-    <MarketDepthPanel data={data}/>
-    //  <MarketDepthPanel data={testData} /> 
+     <MarketDepthPanel data={data}/>
+    // <MarketDepthPanel data={testData} /> 
     // <MyExtraMarketDepthPanel data={data}/>    
   )
 };

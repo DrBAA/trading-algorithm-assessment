@@ -40,6 +40,23 @@
 
 
 
+/* ADDED BELOW CODE 19/10/2024 TO MAKE THE ARROWS FATTER*/
+.arrow.up {
+    font-family:'MutatorSans', sans-serif;
+    font-size: 0.9em; /* Adjust the size to make the arrow shorter */
+    font-weight: bold; /* Ensures the arrow is thick */
+    display: inline-block;
+  }
+  
+
+.arrow.down {
+    font-family:'MutatorSans', sans-serif;
+    font-size: 0.9em; /* Adjust the size to make the arrow shorter */
+    font-weight: bold; /* Ensures the arrow is thick */
+    display: inline-block;
+  }
+  
+
 
 
 
