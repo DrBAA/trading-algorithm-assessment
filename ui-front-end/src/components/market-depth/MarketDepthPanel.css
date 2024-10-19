@@ -1,4 +1,4 @@
-/* FROM CHAT GPT and FROM BROCODE YOUTUBE VIDEO
+/* FROM CHAT GPT, BROCODE YOUTUBE VIDEO AND MYSELF
 
 /* Centering the MarketDepthFeature and setting its size */
 body {
@@ -6,13 +6,13 @@ body {
 }
 
 .marketDepthPanel {
-    margin: 0 auto; /* Centers the table horizontally */  
-    width: 35% !important;
+    margin: 0 auto; /* Centers the container horizontally */  
+    width: 35% !important; /*keeps the container width at 35%*/
     max-width: none !important;
     display: table; /*inline-block;*/
     /*border: 2px solid red;*/
     border-collapse: collapse;  
-    min-height: 500px; /* Ensure there is enough height for 10 rows */
+    min-height: 500px; /* Ensures there is enough height for 10 rows */
     height: 595; /* Automatically adjusts height */
     overflow-y: auto; /* Enable scrolling if necessary */
     position: relative; 
@@ -28,11 +28,11 @@ body {
 
 /* Ensure the table itself has a border */
 .marketDepthPanel-table {
-    width: 100%;
+    width: 100%; /*Ensures the table uses full width of the container */
     max-width: none !important;
     border: 1.5px solid #d3d3d3; /* Outer border for the entire table, including the bottom */
     border-collapse: collapse;
-    table-layout: fixed; /* Ensure columns respect set widths - ADDED 29/9/24*/
+    /*table-layout: fixed !important; */ 
 }
 
 
@@ -59,17 +59,6 @@ body {
     text-align: center !important; /* Centers the text horizontally */
 }
 
-/* Reduce the width of the Level column - ADDED 29/9/2024 */
-.marketDepthPanel-table td:nth-child(1),
-.marketDepthPanel-table th:nth-child(1) {
-    width: 10%; /* Reduce the width of the first column to half its current size */
-    white-space: nowrap; /* Prevent the Level column content from wrapping */   
-}
-
-/* Let other columns expand dynamically - ADDED 29/9/2024 */
-.marketDepthPanel-table td {
-    width: auto; /* Allow other columns to expand automatically */
-}
 
 /* Center align the "Quantity" column header on the Bid side */
 .marketDepthPanel-table th:nth-child(2) {
@@ -121,3 +110,37 @@ body {
 .marketDepthPanel-table th[colspan="2"].centered-header {
     text-align: center !important; /* Add !important to ensure centering */
 }
+
+/* Reduce the width of the Level column - ADDED 29/9/2024 */
+.marketDepthPanel-table td:nth-child(1),
+.marketDepthPanel-table th:nth-child(1) {
+    width: 10% !important; /* Reduce the width of the first column to half its current size */
+    white-space: nowrap; /* Prevent the Level column content from wrapping */   
+}
+
+/* BELOW CODE ADDED 19/10/2024 TO SET A FIXED WIDTH FOR THE PRICE COLUMNS */
+.marketDepthPanel-table th:nth-child(3), 
+.marketDepthPanel-table td:nth-child(3),
+.marketDepthPanel-table th:nth-child(4), 
+.marketDepthPanel-table td:nth-child(4) {
+    width: 20%; /* Bid/Ask Price */
+}
+
+.marketDepthPanel-table th:nth-child(2), 
+.marketDepthPanel-table td:nth-child(2),
+.marketDepthPanel-table th:nth-child(5), 
+.marketDepthPanel-table td:nth-child(5) {
+    width: 25%; /* Bid/Ask Price */
+}
+
+
+
+/* AMENDMENTS 19/10/2024
+Set the quantity and price columns to fixed widths
+Removed "width: auto !important;" which I initially added 29/9/24 to allow other
+columns to expand automatically as this is no longer required as the columns have a fixed width*/
+
+/*
+Commented out line 35 "table-layout: fixed !important;" on .marketDepthPanel-table. This was initially 
+added 29/9/24 to ensure columns respect set widths but this did not work when I tried to set fixed widths
+for price and quantity columns. After commenting it out the fixed widths worked! */
