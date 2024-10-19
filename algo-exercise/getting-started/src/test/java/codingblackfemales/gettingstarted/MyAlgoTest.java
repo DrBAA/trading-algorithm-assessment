@@ -239,7 +239,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
     }   
 
-} 
+}
 
 
 // ORIGINAL CODE

@@ -14,16 +14,18 @@ import messages.order.Side;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// 8TH AND FINAL CODE
+// 9TH AND FINAL CODE - AFTER THE BUGS WERE FIXED ATFER 17/10/2024
 // THIS ALGO CREATES BUY ORDERS BASED ON THE SPREAD NARROWING AND CANCELS AN ORDER BASED ON CERTAIN CONDITIONS
 // IF THE SPREAD NARROWS TO BELOW OR EQUALS TO 5 PRICE POINTS, CREATE UP TO 5 BUY ORDERS FOR 200 SHARES PER ORDER.
 // FOR EACH UNFILLED/PARTIALLY FILLED BUY ORDER, IF THE BEST ASK PRICE IS ABOVE OR EQUALS TO THE BUY
-// PRICE FOR THAT SPECIFIC ORDER PLUS 2 PRICE POINTS, CANCEL THAT  ORDER
+// PRICE FOR THAT SPECIFIC ORDER PLUS THE PRICE REVERSAL THRESHOLD, CANCEL THAT  ORDER
 
 // RESULTS - BASED ON 9 MARKET DATA TICKS (2 FROM AbstractAlgoBackTest.java AND THE OTHER 7 FROM MyAlgoBackTest.java,
 // THE ALGO CREATED 5 BUY ORDERS INITIALLY, GOT 2 FULLY FILLED ORDERS AND 1 PARTIAL FILL
-// AFTER THAT, THE ALGO CREATED 1 BUY ORDER AT A TIME BUT GOT NO MORE FILLS. THE ALGO ALSO CANCELLED 5 ORDERS.
-// THE CURRENT STATE HAS 3 ACTIVE ORDERS REMAINING (2 FULLY FILLED, 1 NOT FILLED AT ALL) AND 5 CANCELLED.
+// AFTER THAT, THE ALGO CONTINUED TO CANCEL ORDERS WHEN CONDITIONS WERE MET.
+// THE ALGO ALSO CONTINUED TO CREATE UP TO 5 ORDERS WHEN BUY CONDITIONS WERE MET BUT GOT NO MORE FILLS.
+// IN TOTAL THE ALGO CREATED 11 BUY ORDERS, GOT 2 FULLY FILLED & 1 PARTIAL FILL, CANCELED 9 ORDERS
+// THE CURRENT STATE HAS 2 ACTIVE ORDERS REMAINING  AND 9 CANCELLED.
 
 
 public class MyAlgoLogic implements AlgoLogic {
@@ -110,7 +112,7 @@ public class MyAlgoLogic implements AlgoLogic {
                     // Define a price reversal threshold (in price points)            
                     final long priceReversalThreshold = 7L;  // was 10L
 
-                    // Check if the order is partially filled or not filled at all and whether ask price is above the defined threshold
+                    // Check if the order is partially filled or not filled at all and whether Best ask price is above the defined threshold
                     if ((bestAskPrice >= (theOrderPrice + priceReversalThreshold)) && (theOrderFilledQuantity < theOrderQuantity)){
 
                         // Calculate the remaining unfilled quantity
@@ -157,9 +159,6 @@ public class MyAlgoLogic implements AlgoLogic {
     }
 
 }
-
-
-
 
 
 // // ORIGINAL CODE
