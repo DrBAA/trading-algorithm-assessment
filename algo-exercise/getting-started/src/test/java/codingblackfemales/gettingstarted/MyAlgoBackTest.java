@@ -61,8 +61,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
 
         encoder.askBookCount(4)
-                // .next().price(108).size(300L) 
-                .next().price(100).size(300L) 
+                .next().price(103).size(300L) // Ask price was 100
                 .next().price(109L).size(200L)
                 .next().price(110L).size(5000L)
                 .next().price(119L).size(5600L);
@@ -73,7 +72,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     }
 
     // ADDED 27/9/2024 - FOR TESTING PURPOSES
-    // bestAsk Price has moved up to 108 which should trigger a cancellation
+    // bestAsk Price has moved up to 105 which should trigger a cancellation
     // of any partially filled or unfilled orders
     protected UnsafeBuffer createTick4(){
 
@@ -92,14 +91,12 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         encoder.source(Source.STREAM);
 
         encoder.bidBookCount(3)
-            // .next().price(97L).size(600L)
-                .next().price(98L).size(600L)
+                .next().price(100L).size(600L) // Bid price was 98
                 .next().price(96L).size(200L)
                 .next().price(95L).size(300L);
-               //.next().price(94L).size(100L);
 
         encoder.askBookCount(4)
-            .next().price(108L).size(300L)
+            .next().price(108L).size(300L) 
             .next().price(109L).size(200L)
             .next().price(110L).size(5000L)
             .next().price(119L).size(5600L);
@@ -127,8 +124,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         encoder.instrumentId(123L);
         encoder.source(Source.STREAM);
 
-        encoder.bidBookCount(3)
-            // .next().price(100L).size(600L)        
+        encoder.bidBookCount(3)       
             .next().price(101L).size(600L)
             .next().price(97L).size(200L)
             .next().price(96L).size(300L);
@@ -164,11 +160,9 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
                 .next().price(103L).size(600L)
                 .next().price(97L).size(200L)
                 .next().price(96L).size(300L);
-    //                .next().price(94L).size(100L);
 
         encoder.askBookCount(3)
             .next().price(108L).size(300L)
-            // .next().price(109L).size(200L)
             .next().price(110L).size(5000L)
             .next().price(119L).size(5600L);
 
@@ -296,15 +290,35 @@ protected UnsafeBuffer createTick9(){
     @Test
     public void backtestAlgoBehaviourFrom1stTickTo9thTick() throws Exception {
 
-        final var state = container.getState();
+        final var state = container.getState();        
+
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 1ST TICK 
-        // Best Bid = 98, Best Ask = 100, Spread <= 5
+        // Best Bid = 98, Best Ask = 100, Spread = 2
         // Algo should create 5 buy orders at Best bid price. No fills. No Sells
 
         send(createTick());
 
+            // Get the best bid and ask prices at level 0 and their corresponding quantities
+            final BidLevel bestBid = state.getBidAt(0);
+            final AskLevel bestAsk = state.getAskAt(0);
+            final long bestBidPrice = bestBid.getPrice();
+            final long bestAskPrice = bestAsk.getPrice();
+
+            // Define the spread threshold (in price points)
+            final long spread = Math.abs(bestAskPrice - bestBidPrice); // added 5/10/2024 to get absolute value of a number
+            final boolean spreadIsBelowOrEqualsToSpreadThreshhold = spread <= 5L; 
+            final boolean spreadIsAboveOrEqualsToSpreadThreshhold = spread >= 5L;
+
+            // check for best bid and best ask prices, and the spread
+            assertEquals(98, bestBidPrice);
+            assertEquals(100, bestAskPrice);
+            assertEquals(2, spread);
+            assertEquals(true, spreadIsBelowOrEqualsToSpreadThreshhold);
+            assertEquals(false, spreadIsAboveOrEqualsToSpreadThreshhold);
+
             final String updatedOrderBook1 = Util.orderBookToString(state);
+
 
             //assert to check we created 5 Buy orders for 200 shares at 98 and no Sell orders 
             for (ChildOrder childOrder : state.getActiveChildOrders()) {
@@ -320,12 +334,12 @@ protected UnsafeBuffer createTick9(){
             final int activeChildOrdersAfter1stTick = state.getActiveChildOrders().size();
 
             final long totalOrderedQuantityAfter1stTick = state.getChildOrders().stream()
-                                                                .map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L);
+                                                               .map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L);
 
             final long filledQuantityAfter1stTick = state.getChildOrders().stream()
-                                                            .map(ChildOrder::getFilledQuantity)
-                                                            .reduce(Long::sum).orElse(0L);
+                                                         .map(ChildOrder::getFilledQuantity)
+                                                         .reduce(Long::sum).orElse(0L);
 
             final long unfilledQuantityAfter1stTick = totalOrderedQuantityAfter1stTick - filledQuantityAfter1stTick;
 
@@ -363,12 +377,12 @@ protected UnsafeBuffer createTick9(){
             final int activeChildOrdersAfter2ndTick = state.getActiveChildOrders().size();
 
             final long totalOrderedQuantityAfter2ndTick = state.getChildOrders().stream()
-                                                                .map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L);
+                                                               .map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L);
 
             final long filledQuantityAfter2ndTick = state.getChildOrders().stream()
-                                                            .map(ChildOrder::getFilledQuantity)
-                                                            .reduce(Long::sum).orElse(0L);
+                                                         .map(ChildOrder::getFilledQuantity)
+                                                         .reduce(Long::sum).orElse(0L);
 
             final long unfilledQuantityAfter2ndTick = totalOrderedQuantityAfter2ndTick - filledQuantityAfter2ndTick;
 
@@ -383,7 +397,7 @@ protected UnsafeBuffer createTick9(){
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER 3RD TICK 
-        // Best Bid = 96, Best Ask = 100, Spread = 4 points         
+        // Best Bid = 96, Best Ask = 103, Spread = 7 points         
         // The list should have 5 Buy orders partially filled at the initial price of 98 as at tick 2
         // No new buy orders should be created as the list has 5 active child orders 
         // No Sell order should be created
@@ -411,15 +425,16 @@ protected UnsafeBuffer createTick9(){
                                                                     .count();
 
             final long totalOrderedQuantityAfter3rdTick = state.getChildOrders().stream()
-                                                                .map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L);
+                                                               .map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L);
 
             final long filledQuantityAfter3rdTick = state.getChildOrders().stream()
-                                                            .map(ChildOrder::getFilledQuantity)
-                                                            .reduce(Long::sum).orElse(0L);
+                                                         .map(ChildOrder::getFilledQuantity)
+                                                         .reduce(Long::sum).orElse(0L);
 
             final long unfilledQuantityAfter3rdTick = totalOrderedQuantityAfter3rdTick - filledQuantityAfter3rdTick;
 
+            // check for total orders, filled quantities, unfilled quantities, etc
             assertEquals(5, totalOrdersCountAfter3rdTick);
             assertEquals(1000, totalOrderedQuantityAfter3rdTick);            
             assertEquals(501, filledQuantityAfter3rdTick);
@@ -430,23 +445,15 @@ protected UnsafeBuffer createTick9(){
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 4TH TICK
-        // Best Bid = 98, Best Ask = 108, Spread = 10 points. PriceReversalThreshold = 7
+        // Best Bid = 100, Best Ask = 108, Spread = 8 points. PriceReversal = 10 points
         // No new Buy orders should be created as the spread has widened
-        // 3 partially filled buy orders should be cancelled as the price has reversed by over 7 points
+        // 3 partially filled buy orders should be cancelled as the Ask price has reversed by 7 points from previous buy limit price
         // The state should have a total order count of 5 Buy orders; 2 active, 3 cancelled
-        // No Sell order should be created as the Best Bid price has not moved up 
+        // No Sell order should be created
 
         send(createTick4());
 
             final String updatedOrderBook4 = Util.orderBookToString(state);
-
-            //assert to check that we created a Buy order for 200 shares at 98 and no Sell orders            
-            for (ChildOrder childOrder : state.getChildOrders()) {
-                assertEquals(true, childOrder.getSide() == Side.BUY);
-                assertEquals(200, childOrder.getQuantity());
-                assertEquals(98, childOrder.getPrice());
-                assertEquals (true, childOrder.getSide() != Side.SELL);
-            }
 
             final int totalOrdersCountAfter4thTick = state.getChildOrders().size();
             final int activeChildOrdersAfter4thTick = state.getActiveChildOrders().size();
@@ -457,32 +464,71 @@ protected UnsafeBuffer createTick9(){
                                                                     .count();
 
             final long totalOrderedQuantityAfter4thTick = state.getChildOrders().stream()                                                            
-                                                                .map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L); 
+                                                               .map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L); 
 
             final long filledQuantityAfter4thTick = state.getChildOrders().stream()                                                        
-                                                            .map(ChildOrder::getFilledQuantity)
-                                                            .reduce(Long::sum).orElse(0L);
+                                                         .map(ChildOrder::getFilledQuantity)
+                                                         .reduce(Long::sum).orElse(0L);
 
             final long unFilledQuantityAfter4thTick = totalOrderedQuantityAfter4thTick - filledQuantityAfter4thTick;
+
+            //assert to check that we created a Buy order for 200 shares at 98 and no Sell orders            
+            for (ChildOrder childOrder : state.getChildOrders()) {
+                assertEquals(true, childOrder.getSide() == Side.BUY);
+                assertEquals(200, childOrder.getQuantity());
+                assertEquals(98, childOrder.getPrice());
+                assertEquals (true, childOrder.getSide() != Side.SELL);
+            }            
 
             assertEquals(5, totalOrdersCountAfter4thTick);
             assertEquals(1000, totalOrderedQuantityAfter4thTick);            
             assertEquals(501, filledQuantityAfter4thTick);
+            assertEquals(3, totalNumberOfFilledOrdersAfter4thTick);            
             assertEquals(499, unFilledQuantityAfter4thTick);
-            assertEquals(3, totalNumberOfFilledOrdersAfter4thTick);
             assertEquals(2, activeChildOrdersAfter4thTick);                                 
             assertEquals(3, cancelledChildOrdersAfter4thTick);
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 5TH TICK
         // Best Bid = 101, Best Ask = 106, Spread = 5 points,
-        // 1 new buy order to be created at 101            
-        // The state should have 6 Buy orders with partial fills as in tick 4; 3 cancelled and 3 active
+        // 3 new buy orders to be created at 101 as the spread has narrowed.           
+        // The state should now have 8 Buy orders with partial fills as in tick 4; 3 cancelled and 5 active
 
         send(createTick5());
 
             final String updatedOrderBook5 = Util.orderBookToString(state);     
+
+            final int totalOrdersCountAfter5thTick = state.getChildOrders().size();
+            final int activeChildOrdersAfter5thTick = state.getActiveChildOrders().size();
+            // int cancelledChildOrdersAfter5thTick = totalOrdersCountAfter5thTick - activeChildOrdersAfter5thTick;
+
+            final long totalOrderedQuantityAfter5thTick = state.getChildOrders().stream()
+                                                               .map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L);
+
+            final long filledQuantityAfter5thTick = state.getChildOrders().stream()
+                                                         .map(ChildOrder::getFilledQuantity)
+                                                         .reduce(Long::sum).orElse(0L);
+
+            final long unfilledQuantityAfter5thTick = totalOrderedQuantityAfter5thTick - filledQuantityAfter5thTick;                                                                                 
+
+            final long sellOrderCountAfter5thTick = state.getChildOrders().stream()
+                                                         .filter(order -> order.getSide() == Side.SELL)
+                                                         .map(order -> 1L).reduce(0L, Long::sum); //sets a default value of 0 for
+                                                                                                    // when no elements match the filter condition
+
+            final long cancelledOrderCountAfter5thTick = state.getChildOrders().stream()
+                                                              .filter(order -> order.getState() == 3)
+                                                              .map(order -> 1L).reduce(0L, Long::sum);
+
+            // check that the last order in the list is at the price of 104                            
+            Optional<ChildOrder> lastOrderIs101 = state.getChildOrders().stream()
+                                                       .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
+                                                       .filter(order5thTick -> order5thTick.getPrice() == 101L)
+                                                       .reduce((first, second) -> second);
+
+            ChildOrder order = lastOrderIs101.orElseThrow(() -> new AssertionError("Expected the last buy order for 101 but found something else"));
 
             // assert to check that we created Buy orders for 200 shares and no Sell
 
@@ -490,43 +536,12 @@ protected UnsafeBuffer createTick9(){
                 assertEquals(200, childOrder.getQuantity());                     
             }
 
-            final int totalOrdersCountAfter5thTick = state.getChildOrders().size();
-            final int activeChildOrdersAfter5thTick = state.getActiveChildOrders().size();
-            // int cancelledChildOrdersAfter5thTick = totalOrdersCountAfter5thTick - activeChildOrdersAfter5thTick;
-
-            final long totalOrderedQuantityAfter5thTick = state.getChildOrders().stream()
-                                                                .map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L);
-
-            final long filledQuantityAfter5thTick = state.getChildOrders().stream()
-                                                            .map(ChildOrder::getFilledQuantity)
-                                                            .reduce(Long::sum).orElse(0L);
-
-            final long unfilledQuantityAfter5thTick = totalOrderedQuantityAfter5thTick - filledQuantityAfter5thTick;                                                                                 
-
-            final long sellOrderCountAfter5thTick = state.getChildOrders().stream()
-                                                            .filter(order -> order.getSide() == Side.SELL)
-                                                            .map(order -> 1L).reduce(0L, Long::sum); //sets a default value of 0 for
-                                                                                                    // when no elements match the filter condition
-
-            final long cancelledOrderCountAfter5thTick = state.getChildOrders().stream()
-                                                                .filter(order -> order.getState() == 3)
-                                                                .map(order -> 1L).reduce(0L, Long::sum);
-
-            // check that the last order in the list is at the price of 104                            
-            Optional<ChildOrder> lastOrderIs101 = state.getChildOrders().stream()
-                                                        .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
-                                                        .filter(order5thTick -> order5thTick.getPrice() == 101L)
-                                                        .reduce((first, second) -> second);
-
-            ChildOrder order = lastOrderIs101.orElseThrow(() -> new AssertionError("Expected the last buy order for 101 but found something else"));
-
             // assert that we have created a new buy order at the price of 103
             assertEquals(101, order.getPrice()); 
 
-            // CHANGES AFTER THE BUG WAS FIXED 17/102/2024 - order quantity increased
+            // CHANGES AFTER BUGs WERE FIXED 17/102/2024 - orders and order quantity increased which is how the algo was expected to work
             assertEquals(8, totalOrdersCountAfter5thTick); // 17/10/2024 expected 6 but was 8
-            assertEquals(0, sellOrderCountAfter5thTick); // 17/10/2024 expected 1200 but was 1600
+            assertEquals(0, sellOrderCountAfter5thTick); 
             assertEquals(1600, totalOrderedQuantityAfter5thTick); // 17/10/2024 expected 1200 but was 1600
             assertEquals(501, filledQuantityAfter5thTick);
             assertEquals(1099, unfilledQuantityAfter5thTick); // 17/10/2024 expected 699 but was 1099
@@ -535,9 +550,9 @@ protected UnsafeBuffer createTick9(){
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 6TH TICK
-        // Best Bid 103, Best Ask 108; Spread = 5.
+        // Best Bid 103, Best Ask 108; Spread = 5; PriceReversalThreshold = 7 points
+        // 3 unfilled orders should be cancelled as the Best Ask price has moved away from previous buy limit order by 7 points        
         // 3 more Buy orders should be created at 103
-        // 3 unfilled orders should be cancelled as the Best Ask has moved away from the buy limit order
         // The state should have 11 Buy orders with partial fills as in 5th tick; 6 cancelled and 5 active
         // No sell orders
 
@@ -548,32 +563,32 @@ protected UnsafeBuffer createTick9(){
             final int activeChildOrdersAfter6thTick = state.getActiveChildOrders().size();
 
             final long totalOrderedQuantityAfter6thTick = state.getChildOrders().stream()
-                                                                .map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L);
+                                                               .map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L);
 
             final long filledQuantityAfter6thTick = state.getChildOrders().stream()
-                                                            .map(ChildOrder::getFilledQuantity)
-                                                            .reduce(Long::sum).orElse(0L);
+                                                         .map(ChildOrder::getFilledQuantity)
+                                                         .reduce(Long::sum).orElse(0L);
 
             final long unfilledQuantityAfter6thTick = totalOrderedQuantityAfter6thTick - filledQuantityAfter6thTick;   
 
             final long buyActiveOrderCountAfter6thTick = state.getChildOrders().stream()
-                                                                .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                                .map(order6thTick -> 1L).reduce(0L, Long::sum);
+                                                              .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
+                                                              .map(order6thTick -> 1L).reduce(0L, Long::sum);
 
             final long sellOrderCountAfter6thTick = state.getChildOrders().stream()
-                                                            .filter(order6thTick -> order6thTick.getSide() == Side.SELL)
-                                                            .map(order6thTick -> 1L).reduce(0L, Long::sum);
+                                                         .filter(order6thTick -> order6thTick.getSide() == Side.SELL)
+                                                         .map(order6thTick -> 1L).reduce(0L, Long::sum);
             
             final long cancelledChildOrdersAfter6thTick = state.getChildOrders().stream()
-                                                                .filter(order6thTick -> order6thTick.getState() == OrderState.CANCELLED)
-                                                                .count();
+                                                               .filter(order6thTick -> order6thTick.getState() == OrderState.CANCELLED)
+                                                               .count();
 
             // check that the last order in the list is at the price of 103                            
             Optional<ChildOrder> lastOrderIs103 = state.getChildOrders().stream()
-                                                        .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                        .filter(order6thTick -> order6thTick.getPrice() == 103L)
-                                                        .reduce((first, second) -> second);
+                                                       .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
+                                                       .filter(order6thTick -> order6thTick.getPrice() == 103L)
+                                                       .reduce((first, second) -> second);
 
             ChildOrder newBuyOrderIs103 = lastOrderIs103.orElseThrow(() -> new AssertionError("Expected the last buy order for 103 but found something else"));
 
@@ -604,12 +619,12 @@ protected UnsafeBuffer createTick9(){
             final int activeChildOrdersAfter7thTick = state.getActiveChildOrders().size();
 
             final long totalOrderedQuantityAfter7thTick = state.getChildOrders()
-                                                                .stream().map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L);
+                                                               .stream().map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L);
 
             final long filledQuantityAfter7thTick = state.getChildOrders()
-                                                            .stream().map(ChildOrder::getFilledQuantity)                                                       
-                                                            .reduce(Long::sum).orElse(0L);
+                                                         .stream().map(ChildOrder::getFilledQuantity)                                                       
+                                                         .reduce(Long::sum).orElse(0L);
 
             final long unfilledQuantityAfter7thTick = totalOrderedQuantityAfter7thTick - filledQuantityAfter7thTick;
 
@@ -618,8 +633,8 @@ protected UnsafeBuffer createTick9(){
                                                         .map(order7thTick -> 1L).reduce(0L, Long::sum);
 
             final long sellOrderCountAfter7thTick = state.getChildOrders()
-                                                            .stream().filter(order7thTick -> order7thTick.getSide() == Side.SELL)
-                                                            .map(order7thTick -> 1L).reduce(0L, Long::sum);
+                                                         .stream().filter(order7thTick -> order7thTick.getSide() == Side.SELL)
+                                                         .map(order7thTick -> 1L).reduce(0L, Long::sum);
 
             final int cancelledChildOrdersAfter7thTick = totalOrdersCountAfter7thTick - activeChildOrdersAfter7thTick;
 
@@ -648,14 +663,14 @@ protected UnsafeBuffer createTick9(){
             final int activeChildOrdersAfter8thTick = state.getActiveChildOrders().size();
 
             final long totalOrderedQuantityAfter8thTick = state.getChildOrders()
-                                                                .stream()
-                                                                .map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L);
+                                                               .stream()
+                                                               .map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L);
 
             final long filledQuantityAfter8thTick = state.getChildOrders()
-                                                            .stream()
-                                                            .map(ChildOrder::getFilledQuantity)
-                                                            .reduce(Long::sum).orElse(0L);
+                                                         .stream()
+                                                         .map(ChildOrder::getFilledQuantity)
+                                                         .reduce(Long::sum).orElse(0L);
 
             final long unfilledQuantityAfter8thTick = totalOrderedQuantityAfter8thTick - filledQuantityAfter7thTick;   
 
@@ -665,9 +680,9 @@ protected UnsafeBuffer createTick9(){
                                                         .map(order8thTick -> 1L).reduce(0L, Long::sum);
 
             final long sellOrderCountAfter8thTick = state.getChildOrders()
-                                                            .stream()
-                                                            .filter(order8thTick -> order8thTick.getSide() == Side.SELL)
-                                                            .map(order8thTick -> 1L).reduce(0L, Long::sum);
+                                                         .stream()
+                                                         .filter(order8thTick -> order8thTick.getSide() == Side.SELL)
+                                                         .map(order8thTick -> 1L).reduce(0L, Long::sum);
 
             final int cancelledChildOrdersAfter8thTick = totalOrdersCountAfter8thTick - activeChildOrdersAfter8thTick;
 
@@ -697,13 +712,13 @@ protected UnsafeBuffer createTick9(){
             final int activeChildOrdersAfter9thTick = state.getActiveChildOrders().size();
 
             final long totalOrderedQuantityAfter9thTick = state.getChildOrders().stream()
-                                                                .map(ChildOrder::getQuantity)
-                                                                .reduce (Long::sum).orElse(0L);
+                                                               .map(ChildOrder::getQuantity)
+                                                               .reduce (Long::sum).orElse(0L);
 
             final long filledQuantityAfter9thTick = state.getChildOrders()
-                                                            .stream()
-                                                            .map(ChildOrder::getFilledQuantity)
-                                                            .reduce(Long::sum).orElse(0L);
+                                                         .stream()
+                                                         .map(ChildOrder::getFilledQuantity)
+                                                         .reduce(Long::sum).orElse(0L);
 
             final long unfilledQuantityAfter9thTick = totalOrderedQuantityAfter9thTick - filledQuantityAfter9thTick;   
 
@@ -714,10 +729,10 @@ protected UnsafeBuffer createTick9(){
                                                         .reduce(0L, Long::sum);
 
             final long sellOrderCountAfter9thTick = state.getChildOrders()
-                                                            .stream()
-                                                            .filter(order9thTick -> order9thTick.getSide() == Side.SELL)
-                                                            .map(order9thTick -> 1L)
-                                                            .reduce(0L, Long::sum);
+                                                          .stream()
+                                                          .filter(order9thTick -> order9thTick.getSide() == Side.SELL)
+                                                          .map(order9thTick -> 1L)
+                                                          .reduce(0L, Long::sum);
 
             final int cancelledChildOrdersAfter9thTick = totalOrdersCountAfter9thTick - activeChildOrdersAfter9thTick;
 
@@ -744,11 +759,11 @@ protected UnsafeBuffer createTick9(){
         // // });
 
     
-        final BidLevel bestBid = state.getBidAt(0);
-        final AskLevel bestAsk = state.getAskAt(0);            
-        final long bestBidPrice = bestBid.getPrice();
-        final long bestAskPrice = bestAsk.getPrice();
-        final long spread = Math.abs(bestAskPrice - bestBidPrice);
+        // final BidLevel bestBid = state.getBidAt(0);
+        // final AskLevel bestAsk = state.getAskAt(0);            
+        // final long bestBidPrice = bestBid.getPrice();
+        // final long bestAskPrice = bestAsk.getPrice();
+        // final long spread = Math.abs(bestAskPrice - bestBidPrice);
 
 
         final long finalTotalChildOrderCount = state.getChildOrders().size();
