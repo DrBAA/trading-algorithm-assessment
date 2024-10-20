@@ -14,7 +14,7 @@ import messages.order.Side;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// 8TH AND FINAL CODE
+// 9TH AND FINAL CODE - AFTER BUGS WERE FIXED FROM 17/10/2024
 // TRADING ALGO THAT CREATES BUY ORDERS AND CANCELS AN ORDER BASED ON THE SPREAD NARROWING AND EXPANDING
 // THE ALGO CAN ALSO MAKE A PROFIT BY BUYING SHARES WHEN PRICES ARE LOW AND SELLING THEM WHEN PRICES ARE HIGH
 // IF THE SPREAD NARROWS TO OR BELOW THE SET THRESHOLD, CREATE UP TO 5 BUY ORDERS FOR 200 SHARES PER ORDER,
@@ -96,7 +96,7 @@ public class MyProfitAlgo implements AlgoLogic {
 
 
         // Define a price reversal threshold (in price points)            
-        long priceReversalThreshold = 10L;
+        final long priceReversalThreshold = 7L; // was 10L
 
         // amended code - now cancelling partially filled or unfilled orders
         if (!activeChildOrders.isEmpty()) {                      
@@ -168,9 +168,10 @@ public class MyProfitAlgo implements AlgoLogic {
         // for every child order, if side == BUY, cancel the child order
         // else - conditions to create a sell order if the sell conditions are met  
         
+        // COMMENTED OUT THIS CODE TO ENABLE MORE SELL ORDERS TO BE PLACED
         if (!activeChildOrders.isEmpty()) {
             for (ChildOrder childOrder : activeChildOrders) {
-                if (childOrder.getSide() == Side.SELL) {  
+                if (childOrder.getSide() == Side.SELL && childOrder.getQuantity()>5) { 
                         logger.info("[PROFITALGO] SELL CONDITIONS - A sell order exists. Take no action.");
                     return NoAction.NoAction;  
                 }
@@ -212,7 +213,7 @@ public class MyProfitAlgo implements AlgoLogic {
 
                 return new CreateChildOrder(Side.SELL, sellQuantity, bestBidPrice); 
                 // tried to sell at bestAskPrice or midpoint. Order not getting filled after several ticks.
-                // changed to bestBidPrice or hard code value. order got filled straight away.
+                // changed to bestBidPrice or hard coded value. order got filled straight away.
             }            
 
             else {
@@ -232,5 +233,4 @@ public class MyProfitAlgo implements AlgoLogic {
     }
 
 }
-
 
