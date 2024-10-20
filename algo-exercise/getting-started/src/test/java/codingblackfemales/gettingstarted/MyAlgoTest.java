@@ -117,7 +117,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
             // Define the spread threshold (in price points)
             final long spread = Math.abs(bestAskPrice - bestBidPrice); // added 5/10/2024 to get absolute value of a number
             final boolean spreadIsBelowOrEqualsToSpreadThreshhold = spread <= 5L; 
-            final boolean spreadIsAboveOrEqualsToSpreadThreshhold = spread >= 5L;
+            final boolean spreadIsAboveOrEqualsToSpreadThreshhold = spread > 5L;
 
             // check for best bid and best ask prices, and the spread
             // assertEquals(98, bestBidPrice); // ERROR WAS EXPECTING 98 BUT WAS 100
@@ -155,7 +155,9 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
             //Check total child orders count, total active child orders and total ordered quantity
             final int totalChildOrdersCountTick1 = container.getState().getChildOrders().size(); // added 15/9/2024
+
             final int totalActiveChildOrdersTick1 = container.getState().getActiveChildOrders().size();
+            
             final long totalOrderedQuantityTick1 = container.getState().getActiveChildOrders().stream()
                                                                        .map(ChildOrder::getQuantity).reduce (Long::sum)
                                                                        .orElse(0L);
@@ -187,7 +189,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
             // Define the spread threshold (in price points)
             final long spread = Math.abs(bestAskPrice - bestBidPrice); // added 5/10/2024 to get absolute value of a number
             final boolean spreadIsBelowOrEqualsToSpreadThreshhold = spread <= 5L; 
-            final boolean spreadIsAboveOrEqualsToSpreadThreshhold = spread >= 5L;
+            final boolean spreadIsAboveOrEqualsToSpreadThreshhold = spread > 5L;
 
             // check for best bid and best ask prices, and the spread
             assertEquals(1, spread);
@@ -219,7 +221,9 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
             //Check total child orders count, total active child orders and total ordered quantity
             final int totalChildOrdersCountTick2 = container.getState().getChildOrders().size(); // added 15/9/2024
+
             final int totalActiveChildOrdersTick2 = container.getState().getActiveChildOrders().size();
+
             final long totalOrderedQuantityTick2 = container.getState().getActiveChildOrders().stream()
                                                                        .map(ChildOrder::getQuantity).reduce (Long::sum)
                                                                        .orElse(0L);
@@ -250,7 +254,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
             // Define the spread threshold (in price points)
             final long spread = Math.abs(bestAskPrice - bestBidPrice); // added 5/10/2024 to get absolute value of a number
             final boolean spreadIsBelowOrEqualsToSpreadThreshhold = spread <= 5L; 
-            final boolean spreadIsAboveOrEqualsToSpreadThreshhold = spread >= 5L;
+            final boolean spreadIsAboveOrEqualsToSpreadThreshhold = spread > 5L;
 
             // check for best bid and best ask prices, and the spread
             assertEquals(3, spread);
@@ -281,7 +285,9 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
             //Check total child orders count, total active child orders and total ordered quantity
             final int totalChildOrdersCountTick3 = container.getState().getChildOrders().size(); // added 15/9/3024
+
             final int totalActiveChildOrdersTick3 = container.getState().getActiveChildOrders().size();
+
             final long totalOrderedQuantityTick3 = container.getState().getActiveChildOrders().stream()
                                                                        .map(ChildOrder::getQuantity).reduce (Long::sum)
                                                                        .orElse(0L);
@@ -295,7 +301,6 @@ public class MyAlgoTest extends AbstractAlgoTest {
     }   
 
 }
-
 
 // ORIGINAL CODE
 // package codingblackfemales.gettingstarted;
