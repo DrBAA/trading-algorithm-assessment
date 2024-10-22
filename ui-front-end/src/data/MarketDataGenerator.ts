@@ -2,7 +2,7 @@ import { Table } from "@vuu-ui/vuu-data-test";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { generateMarketDepth } from "./data-utils";
 
-const UPDATE_FREQUENCY = 250;
+const UPDATE_FREQUENCY = 1000; /*  was 250 milliseconds*/
 
 interface UpdateGenerator {
   setTable: (table: Table) => void;

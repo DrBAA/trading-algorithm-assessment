@@ -8,4 +8,5 @@
     /*border-radius: 4px;*/ /* Optional: Rounded corners for a cleaner look */
     display: inline-block; /* Ensure the background only applies to the text and not the entire cell */
     text-align: right; /* Ensure the text stays right aligned */
+    transition: width .2s linear; /* added 22 Oct 24 - every time width of qty bar changes will transition smoothly from one width to the next*/
 }

@@ -65,7 +65,7 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
             // Dynamically calculate the bid and ask columns width based on quantity and add extra width
 
             const extraPaddingBidSide = 20; // adding extra width    
-            const bidWidth = (row.bidQuantity / maxQuantity) * 110 - extraPaddingBidSide;
+            const bidWidth = (row.bidQuantity / maxQuantity) * 120 - extraPaddingBidSide;
 
             const extraPaddingAskSide = 12; // adding extra width            
             const askWidth = (row.offerQuantity / maxQuantity) * 100 + extraPaddingAskSide;            
