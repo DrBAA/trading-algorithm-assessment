@@ -54,11 +54,11 @@
 /* ADDED BELOW CODE 19/10/2024 TO MAKE THE ARROWS FATTER AND BOLDER*/
 .arrow.up {
     font-family: 'Segoe UI Symbol', sans-serif;    
-    font-size: 20px; /* Adjust the size to make the arrow shorter - was 13 then changed it to 20*/ 
+    font-size: 13px; /* Adjust the size to make the arrow shorter - change to 20 on chromebook to enlarge the arrow size*/ 
     /*font-weight: bold; /* Ensures the arrow is thick */
     display: inline-block;
     transform: scaleY(2); /* Scale the arrow slightly */
-    transform: scaleX(1.3); /* Makes the arrow wider */
+    transform: scaleX(1.3); /* Makes the arrow wider*/
      /*transform: scale(1.2); /* Scale the arrow's width and height proportionately*/   
     /*text-shadow: 1px 0 0 currentColor, -1px 0 0 currentColor;*/
 
@@ -67,11 +67,11 @@
 
 .arrow.down {
     font-family: 'Segoe UI Symbol', sans-serif;    
-    font-size: 20px; /* Adjust the size to make the arrow shorter */
+    font-size: 13px; /* Adjust the size to make the arrow shorter - change to 20 on chromebook to enlarge the arrow size*/
     /*font-weight: bold; /* Ensures the arrow is thick */
     display: inline-block;
     transform: scaleY(2); /*Scale the arrow's width and height proportionately */
-    transform: scaleX(1.3); /* Makes the arrow wider */
+    transform: scaleX(1.3); /* Makes the arrow wider*/
     /*transform: scale(1.2); /* Scale the arrow slightly */    
     /*text-shadow: 1px 0 0 currentColor, -1px 0 0 currentColor;*/
   }

@@ -59,10 +59,12 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
             const bidArrowDirection = row.bid > prevBid ? 'up' : 'down';
             const offerArrowDirection = row.offer > prevOffer ? 'up' : 'down';
 
-            // Calculate the maximum bid/ask quantity
+            // Calculate the maximum bid/ask quantity by comparing bid and ask quantities across all rows then pass it down
+            // as a prop to both BidQuantity and AskQuantity components. see further below for explanation of this code
             const maxQuantity = Math.max(...data.map(row => Math.max(row.bidQuantity, row.offerQuantity)));
             
             // Dynamically calculate the bid and ask columns width based on quantity and add extra width
+            // - see further below for explanation of this code
 
             const extraPaddingBidSide = 20; // adding extra width    
             const bidWidth = (row.bidQuantity / maxQuantity) * 120 - extraPaddingBidSide;
@@ -74,7 +76,7 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
             const totalRows = data.length;
             //const backgroundWidth = ((index + 1) / totalRows) * 100; // Background width decreases as rows go up
             // const backgroundWidth = ((totalRows - index) / totalRows) * 100;
-            const backgroundWidth = 80 + ((index / totalRows) * 20);       
+            const backgroundWidth = 80 + ((index / totalRows) * 20);
 
             return (
               <tr key={index}>
@@ -103,6 +105,21 @@ export const MarketDepthPanel: React.FC<MarketDepthPanelProps> = ({ data }) => {
     </div>
   );
 };
+
+
+// 
+// Line 64 calculates the maximum bid/ask quantity by comparing bid and ask quantities across all rows then pass it down
+// as a prop to both BidQuantity and AskQuantity components. maxQuantity normalizes the width for all quantities based on the largest value.
+// To calculate the maximum quantity, you need access to the full dataset (data), which resides in the parent component (MarketDepthPanel.tsx)
+// The BidQuantity and AskQuantity components will need to use the same maxQuantity to ensure the widths are scaled consistently.
+// By calculating it in the parent and passing it down as a prop, you guarantee that both components use the same reference point
+
+
+// Lines 69 to 79 keeps the background width dynamic so that the background gradually expands from 80% to 100% as you move down the table, 
+// Dynamically calculate the bid and ask columns width based on the quantity then adding extra padding to the left side of the bid column and to the 
+// right side of the ask side.The padding ensures the background colour doesn't touch the edges of the text or the cell borders
+// ExtraPadding adds a constant amount of width after calculating the relative width. This ensures that even when the calculated width is small
+// you get some extra space to make the background color more visible.
 
 
 // SECOND CODE WITH THE PRICE WITHIN THE MARKETDEPTHPANEL COMPONENT
