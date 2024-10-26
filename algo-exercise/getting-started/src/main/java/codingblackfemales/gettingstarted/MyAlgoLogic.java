@@ -52,8 +52,7 @@ public class MyAlgoLogic implements AlgoLogic {
 
 
         // TO CREATE CHILD ORDERS
-        // If there are less than 5 active child orders, and the spread has narrowed to the defined threshold,
-        // create a buy limit order at the best BID price and defined buy quantity
+        // If there are less than 5 active child orders, and the spread has narrowed to the defined threshold, create up to 5 buy limit orders at the best BID price and defined buy quantity
 
         // Retrieve the list of active child orders
         final var activeChildOrders = state.getActiveChildOrders();
