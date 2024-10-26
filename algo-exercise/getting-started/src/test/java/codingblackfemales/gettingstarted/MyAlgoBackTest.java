@@ -321,7 +321,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             final long totalOrderedQuantityAfter1stTick = state.getChildOrders().stream()
                                                                .map(ChildOrder::getQuantity)
-                                                               .reduce (Long::sum).orElse(0L);
+                                                               .reduce (Long::sum).orElse(0L); //.get();
 
             final long filledQuantityAfter1stTick = state.getChildOrders().stream()
                                                          .map(ChildOrder::getFilledQuantity)
@@ -681,13 +681,13 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(103, newBuyOrderIs103.getPrice()); 
 
             // assert the total orders, filled quantities, cancelled quantities, etc
-            assertEquals(11, totalOrdersCountAfter6thTick); // 19/10/2024 AFTER ADJUSTING BEST BID ON TICK 5 FROM 104 TO 101, EXPECTED 8 BUT WAS 11
+            assertEquals(11, totalOrdersCountAfter6thTick); 
             assertEquals(0, sellOrderCountAfter6thTick);                
-            assertEquals(2200, totalBuyOrderedQuantityAfter6thTick); // 19/10/2024 AFTER ADJUSTING BEST BID ON TICK 5 FROM 104 TO 101, EXPECTED 1600 BUT WAS 2200
-            assertEquals(501, totalBuyOrderFilledQuantityAfter6thTick); // 
-            assertEquals(1699, totalBuyOrderUnfilledQuantityAfter6thTick); // 19/10/2024 AFTER ADJUSTING BEST BID ON TICK 5 FROM 104 TO 101, EXPECTED 1099 BUT WAS 1699
+            assertEquals(2200, totalBuyOrderedQuantityAfter6thTick);
+            assertEquals(501, totalBuyOrderFilledQuantityAfter6thTick); 
+            assertEquals(1699, totalBuyOrderUnfilledQuantityAfter6thTick);
             assertEquals(5, activeChildOrdersAfter6thTick);             
-            assertEquals(6, cancelledChildOrdersAfter6thTick); // 19/10/2024 AFTER ADJUSTING BEST BID ON TICK 5 FROM 104 TO 101, EXPECTED 3 BUT WAS 6
+            assertEquals(6, cancelledChildOrdersAfter6thTick);
 
 
 
@@ -860,9 +860,9 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
                                                                   .reduce (Long::sum).orElse(0L);
 
             final long totalBuyOrderFilledQuantityAfter9thTick = state.getChildOrders().stream()
-                                                         .filter(order9thTick -> order9thTick.getSide() == Side.BUY)                                                                      
-                                                         .map(ChildOrder::getFilledQuantity)
-                                                         .reduce(Long::sum).orElse(0L);
+                                                                      .filter(order9thTick -> order9thTick.getSide() == Side.BUY)                                                                      
+                                                                      .map(ChildOrder::getFilledQuantity)
+                                                                      .reduce(Long::sum).orElse(0L);
 
             final long totalBuyOrderUnfilledQuantityAfter9thTick = totalBuyOrderedQuantityAfter9thTick - totalBuyOrderFilledQuantityAfter9thTick;   
 
@@ -873,10 +873,10 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
                                                         .reduce(0L, Long::sum);
 
             final long sellOrderCountAfter9thTick = state.getChildOrders()
-                                                            .stream()
-                                                            .filter(order9thTick -> order9thTick.getSide() == Side.SELL)
-                                                            .map(order9thTick -> 1L)
-                                                            .reduce(0L, Long::sum);
+                                                         .stream()
+                                                         .filter(order9thTick -> order9thTick.getSide() == Side.SELL)
+                                                         .map(order9thTick -> 1L)
+                                                         .reduce(0L, Long::sum);
 
             final int cancelledChildOrdersAfter9thTick = totalOrdersCountAfter9thTick - activeChildOrdersAfter9thTick;
 
