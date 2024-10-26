@@ -1,3 +1,5 @@
+// 25/10/2024 - AMMENDED THE CODE TO ENSURE MORE SELL ORDERS
+
 package codingblackfemales.gettingstarted;
 
 import codingblackfemales.action.Action;
@@ -11,6 +13,9 @@ import codingblackfemales.sotw.marketdata.AskLevel;
 import codingblackfemales.sotw.marketdata.BidLevel;
 import codingblackfemales.util.Util;
 import messages.order.Side;
+
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +27,7 @@ import org.slf4j.LoggerFactory;
 // ORDER, PLUS A SET NUMBER OF POINTS, CANCEL THAT  ORDER
 // IF THE BID AND ASK PRICES GO ABOVE YOUR PREVIOUS BOUGHT PRICE BY A CERTAIN THRESHOLD, SELL THE SHARES AT
 // CURRENT BEST BID PRICE WITH THE AIM OF MAKING A PROFIT
+
 
 
 public class MyProfitAlgo implements AlgoLogic {
@@ -60,10 +66,9 @@ public class MyProfitAlgo implements AlgoLogic {
 
 
         // TO CREATE CHILD ORDERS
-        // If there are less than 5 active child orders, and the spread has narrowed to the defined threshold,
+        // If there are less than 5 active buy child orders, and the spread has narrowed to the defined threshold,
         // create a buy limit order at the best BID price and defined buy quantity
 
-        // if (activeChildOrders.isEmpty()) { // created 1
         if (activeChildOrders.size() < 5) {
 
             if (spread <= spreadThreshold) {
@@ -94,13 +99,12 @@ public class MyProfitAlgo implements AlgoLogic {
         long thisOrderFilledQuantity;
         long thisOrderUnfilledQuantity;
 
-
-        // Define a price reversal threshold (in price points)            
-        final long priceReversalThreshold = 7L; // was 10L
-
         // amended code - now cancelling partially filled or unfilled orders
-        if (!activeChildOrders.isEmpty()) {                      
+        if (!activeChildOrders.isEmpty()) {      
 
+            // Define a price reversal threshold (in price points)            
+            final long priceReversalThreshold = 7L; // was 10L
+            
             for (ChildOrder thisOrder : activeChildOrders) {
 
                 if (thisOrder.getSide() == Side.BUY) {
@@ -125,7 +129,7 @@ public class MyProfitAlgo implements AlgoLogic {
                                     ", Filled Qty: " + thisOrderFilledQuantity  +
                                     ", Unfilled Qty: " + thisOrderUnfilledQuantity);
 
-                        // Cancel the unfilled part of the order if the ASK price moves up by or above the defined threshold
+                        // Cancel the unfilled part of the order if the ASK price moves to or above the defined threshold
                         if (bestAskPrice >= (thisOrderPrice + priceReversalThreshold)) {
                             logger.info("[MYALGO] CANCEL CONDITIONS - BesAsk is: " + bestAsk + " thisOrderPrice is  : " + thisOrderPrice);
                             logger.info("[MYALGO] CANCEL CONDITIONS - price reversal threshold is " + priceReversalThreshold + " points.");
@@ -151,85 +155,91 @@ public class MyProfitAlgo implements AlgoLogic {
                 }
 
             }
-
         }  
+        
+        // THIS CODE WAS LIMITING THE ALGO TO MAKIGN ONLY ONE SELL ORDER. SO COMMENTED THE CODE OUT THEN ADDED MORE
+        // CODE FURTHER BELOW  
+        // if (!activeChildOrders.isEmpty()) {
+        //     for (ChildOrder childOrder : activeChildOrders) {
+        //         if (childOrder.getSide() == Side.SELL) { 
+        //                 logger.info("[PROFITALGO] SELL CONDITIONS - A sell order exists. Take no action.");
+        //             return NoAction.NoAction;  
+        //         }
+        //     }
+        //     logger.info("[PROFITALGO] SELL CONDITIONS - The list has no sell orders. Continue with step to sell");
+        // }  
+
+
 
         // CONDITIONS TO SELL THE SHARES FOR A PROFIT
-        // if current best bid price and best ask price is above my average bought price + 2
-        // create a sell order at best bid price for previous filled quantity
 
-        // add code to get the previous traded price from filled buy orders. calculate an average of buy price
-        // there are multiple orders filled at different prices, calculate an average for the filled quantities
-        // average price at which I bought the shares, then use that price to sell shares
-        // get the filled quantity that I bought at (side.BUY), sum the filled quantity by buy orders,
+        // Calculate the total filled quantity for buy orders
+        final long buyOrdersTotalFilledQuantity = state.getChildOrders().stream()
+                                                       .filter(order -> order.getSide() == Side.BUY)
+                                                       .filter(order -> order.getFilledQuantity() > 0)
+                                                       .mapToLong(ChildOrder::getFilledQuantity)
+                                                       .sum();
 
-        // cancel all the unfilled buy orders before you start selling
-        // add some code to cancel all buy orders before start selling
-        // for every child order, if side == BUY, cancel the child order
-        // else - conditions to create a sell order if the sell conditions are met  
-        
-        // COMMENTED OUT THIS CODE TO ENABLE MORE SELL ORDERS TO BE PLACED
-        if (!activeChildOrders.isEmpty()) {
-            for (ChildOrder childOrder : activeChildOrders) {
-                if (childOrder.getSide() == Side.SELL && childOrder.getQuantity()>5) { 
-                        logger.info("[PROFITALGO] SELL CONDITIONS - A sell order exists. Take no action.");
-                    return NoAction.NoAction;  
-                }
-            }
-            logger.info("[PROFITALGO] SELL CONDITIONS - The list has no sell orders. Continue with step to sell");
-        }
-        
+        // Calculate the total filled quantity for sell orders
+        final long sellOrderTotalFilledQuantity = state.getChildOrders().stream()
+                                                       .filter(order -> order.getSide() == Side.SELL && order.getFilledQuantity() > 0)
+                                                       .mapToLong(ChildOrder::getFilledQuantity)
+                                                       .sum();
 
-        // using Java Streams to calculate the average traded price filtered by filled quantities for buy orders
-        final long averageBoughtPrice = (long) state.getChildOrders().stream()
-                                                    .filter(order -> order.getSide() == Side.BUY)
-                                                    .filter(order -> order.getFilledQuantity() > 0)
-                                                    .mapToLong(ChildOrder::getPrice) // map to the price of the buy order
-                                                    .average()
-                                                    .orElse(0L); // Default to 0 if there are no valid orders
+        // Determine the quantity available for sale
+        final long remainingQuantityToSell = buyOrdersTotalFilledQuantity - sellOrderTotalFilledQuantity;
 
-        // get the total filled quantity filtered by filled buy orders
-        final long buyOrdersFilledQuantity = state.getChildOrders().stream()
-                                                  .filter(order -> order.getSide() == Side.BUY)
-                                                  .filter(order -> order.getFilledQuantity() > 0)
-                                                  .map(ChildOrder::getFilledQuantity)
-                                                  .reduce(Long::sum)
-                                                  .orElse(0L); 
+        // Get the last filled buy order
+        final Optional<ChildOrder> lastFilledBuyOrder = state.getChildOrders().stream()
+                                                             .filter(order -> order.getSide() == Side.BUY)
+                                                             .filter(order -> order.getFilledQuantity() > 0)
+                                                             .reduce((first, second) -> second); // Keeps only the last filled buy order
 
+        // Calculate the average bought price from filled buy orders
+        // final long averageBoughtPrice = (long) state.getChildOrders().stream()
+        //                                             .filter(order -> order.getSide() == Side.BUY)
+        //                                             .filter(order -> order.getFilledQuantity() > 0)
+        //                                             .mapToLong(ChildOrder::getPrice)
+        //                                             .average()
+        //                                             .orElse(0L);
+
+        // Extract the price of the last filled buy order, or default to 0 if no filled buy orders exist
+        final long lastBoughtPrice = lastFilledBuyOrder.map(ChildOrder::getPrice).orElse(0L);
+
+
+        // Set the minimum buy filled quantity required to initiate a sell
         final long sellQuantityThreshold = 100;
-        final long sellQuantity = buyOrdersFilledQuantity; ///5;
 
-        if (!activeChildOrders.isEmpty()) {
+        // Check for sufficient available quantity 
+        if (remainingQuantityToSell >= sellQuantityThreshold) {
 
-            if ((averageBoughtPrice > 0 && buyOrdersFilledQuantity >= sellQuantityThreshold) && 
-                ((bestBidPrice > averageBoughtPrice + 2 && bestAskPrice > averageBoughtPrice + 2))) {
+            // check if market conditions are favourable to sell
+            if (lastBoughtPrice > 0
+                && bestBidPrice > lastBoughtPrice + 2
+                && bestAskPrice > lastBoughtPrice + 2) {
 
                     logger.info("[PROFITALGO] SELL CONDITIONS - bestBidPrice: " + bestBidPrice + 
-                                " |bestAskPrice " + bestAskPrice +
-                                " | previousBoughtPrice: " + averageBoughtPrice );
+                                " | bestAskPrice " + bestAskPrice +
+                                " | averageBoughtPrice: " + lastBoughtPrice);
 
-                    logger.info("[PROFITALGO] SELL CONDITIONS - Market has moved up from my previous buy price " +
-                                "Selling my shares for " + sellQuantity + " units @ " + bestAskPrice);
+                    logger.info("[PROFITALGO] SELL CONDITIONS - Selling " + remainingQuantityToSell + 
+                            " units at " + bestBidPrice);
 
-                return new CreateChildOrder(Side.SELL, sellQuantity, bestBidPrice); 
-                // tried to sell at bestAskPrice or midpoint. Order not getting filled after several ticks.
-                // changed to bestBidPrice or hard coded value. order got filled straight away.
-            }            
+                return new CreateChildOrder(Side.SELL, remainingQuantityToSell, bestBidPrice);
 
-            else {
-
-                // If the Bid and Ask price has not moved beyond the threshold. No order created
-                logger.info(" [PROFITALGO] SELL CONDITIONS - bestBidPrice: " + bestBidPrice +
-                            " |bestAskPrice " + bestAskPrice +
-                            " | averageBoughtPrice: " + averageBoughtPrice );
-
-                logger.info("[PROFITALGO] SELL CONDITIONS - Price has not moved above threshold. Do not trade");
             }
-        }
-  
-        // If there are no active child orders, return no action
+             else {
+                logger.info("[PROFITALGO] SELL CONDITIONS - Price has not moved above threshold");
+            }
+
+        } 
+        else {
+            logger.info("[PROFITALGO] SELL CONDITIONS - No available quantity to sell or minimum filled buy quantity not met.");
+        }     
+
+        // If the conditions are not met, return no action
         return NoAction.NoAction;
-    
+
     }
 
 }

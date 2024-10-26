@@ -773,7 +773,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
 
 
             //Check things like filled quantity, cancelled order count etc....                                                             
-            assertEquals(8, totalOrdersCountAfter6thTick);
+            assertEquals(8, totalOrdersCountAfter6thTick); // 25/10/2024 - EXPECTED 8 BUT WAS 9
             assertEquals(7, buyOrderCountAfter6thTick);
             assertEquals(1, sellOrderCountAfter6thTick); 
             assertEquals(1400, buyOrdersTotalOrderedQuantityAfter6thTick);                                         
@@ -784,11 +784,10 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(5, activeChildOrdersAfter6thTick);
             assertEquals(3, cancelledChildOrdersAfter6thTick);
 
-
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 7TH TICK
         // Best bid = 100; Best Ask = 102; Spread = 2.
         // 2 new Buy order to be partially filled at 102
-        // No sell orders to be created as there are no more cancelled orders with unfilled quantities         
+        // 1 more sell order to be created at 102 and partially filled as there are no more cancelled orders with unfilled quantities         
         // The state should have one Sell order and 7 Buy orders as in previous ticks; 5 active, 3 cancelled
 
 
@@ -831,9 +830,9 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                                         .reduce (Long::sum).orElse(0L);
 
             final long buyOrdersFilledQuantityAfter7thTick = state.getChildOrders().stream()
-                                                                    .filter(order -> order.getSide() == Side.BUY)
-                                                                    .map(ChildOrder::getFilledQuantity)
-                                                                    .reduce(Long::sum).orElse(0L); 
+                                                                  .filter(order -> order.getSide() == Side.BUY)
+                                                                  .map(ChildOrder::getFilledQuantity)
+                                                                  .reduce(Long::sum).orElse(0L); 
 
             final long sellOrderedTotalQuantityAfter7thTick = state.getChildOrders().stream()
                                                                    .filter(order -> order.getSide() == Side.SELL)
@@ -857,7 +856,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
 
             // Check things like filled quantity, cancelled order count etc....
 
-            assertEquals(8, totalOrdersCountAfter7thTick); // 17/10/2024 EXPECTED 7 BUT WAS 8
+            assertEquals(8, totalOrdersCountAfter7thTick); // 25/10/2024 EXPECTED 8 BUT WAS 9
             assertEquals(7, buyOrderCountAfter7thTick);  
             assertEquals(1, sellOrderCountAfter7thTick); 
             assertEquals(1400, buyOrdersTotalOrderedQuantityAfter7thTick);                                         
@@ -870,11 +869,12 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(3, cancelledChildOrdersAfter7thTick);
 
 
+
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 8TH TICK
         // Best Bid 105, Best Ask 109; Spread = 4 
         // 1 buy order with unfilled quantity should be cancelled
         // No more Buy orders should be created as the spread is wide
-        // No new sell orders as sell conditions not met
+        // Previous buy order of 102 should be sold and filled for 105 as the bid and ask price has moved up the sell threshold
         // The state should have 8 child orders with partial fills as in 7th tick; 4 active, 4 cancelled
 
         send(createTick8());
@@ -917,17 +917,16 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                                   .map(ChildOrder::getFilledQuantity)
                                                                   .reduce(Long::sum).orElse(0L);
 
-
             final long buyOrdersUnfilledQuantityAfter8thTick = buyOrdersTotalOrderedQuantityAfter8thTick - buyOrdersFilledQuantityAfter8thTick;
 
             final long sellOrderCountAfter8thTick = state.getChildOrders().stream()
-                                                            .filter(order -> order.getSide() == Side.SELL)
-                                                            .map(order -> 1L).reduce(0L, Long::sum);  
+                                                         .filter(order -> order.getSide() == Side.SELL)
+                                                         .map(order -> 1L).reduce(0L, Long::sum);  
 
             final long sellOrdersTotalOrderedQuantityAfter8thTick = state.getChildOrders().stream()
                                                                          .filter(order -> order.getSide() == Side.SELL)
                                                                          .map(ChildOrder::getQuantity)
-                                                                         .reduce(Long::sum).orElse(0L);                                                                                                                                     
+                                                                         .reduce(Long::sum).orElse(0L);                                                
 
             final long sellOrdersFilledQuantityAfter8thTick = state.getChildOrders().stream()
                                                                    .filter(order -> order.getSide() == Side.SELL)
@@ -941,24 +940,24 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                               .map(order -> 1L).reduce(0L, Long::sum);
 
             //Check things like filled quantity, cancelled order count etc...
-            assertEquals(8, totalOrdersCountAfter8thTick); 
+            assertEquals(9, totalOrdersCountAfter8thTick); // 25/10/2024 - EXPECTED 8 BUT WAS 9
             assertEquals(7, buyOrderCountAfter8thTick);
-            assertEquals(1, sellOrderCountAfter8thTick); 
+            assertEquals(2, sellOrderCountAfter8thTick); 
             assertEquals(1400, buyOrdersTotalOrderedQuantityAfter8thTick); 
             assertEquals(701, buyOrdersFilledQuantityAfter8thTick);
             assertEquals(699, buyOrdersUnfilledQuantityAfter8thTick);
-            assertEquals(501, sellOrdersTotalOrderedQuantityAfter8thTick); 
-            assertEquals(501, sellOrdersFilledQuantityAfter8thTick); 
+            assertEquals(701, sellOrdersTotalOrderedQuantityAfter8thTick); 
+            assertEquals(701, sellOrdersFilledQuantityAfter8thTick); 
             assertEquals(0, sellOrdersUnfilledQuantityAfter8thTick);
-            assertEquals(4, activeChildOrdersAfter8thTick);
+            assertEquals(5, activeChildOrdersAfter8thTick);
             assertEquals(4, cancelledOrderCountAfter8thTick);
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 9TH TICK
-        // Best Bid 106, Best Ask 111; Spread = 5   
+        // Best Bid 104, Best Ask 107; Spread = 3   
         // The state should have 8 Buy orders with partial fills as in 8th tick; 4 active, 4 cancelled
-        // No more Buy order should be created as the spread is wide
-        // No sell orders 
+        // Buy order to be created at 104 as the spread is narrow
+        // No new sell orders 
 
         send(createTick9());
 
@@ -996,52 +995,52 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                                         .reduce (Long::sum).orElse(0L);
 
             final long buyOrdersFilledQuantityAfter9thTick = state.getChildOrders().stream()
-                                                                .filter(order -> order.getSide() == Side.BUY)                
-                                                                .map(ChildOrder::getFilledQuantity)
-                                                                .reduce(Long::sum).orElse(0L);
+                                                                  .filter(order -> order.getSide() == Side.BUY)                
+                                                                  .map(ChildOrder::getFilledQuantity)
+                                                                  .reduce(Long::sum).orElse(0L);
 
 
             final long buyOrdersUnfilledQuantityAfter9thTick = buyOrdersTotalOrderedQuantityAfter9thTick - buyOrdersFilledQuantityAfter9thTick;
 
             final long sellOrderCountAfter9thTick = state.getChildOrders().stream()
-                                                        .filter(order -> order.getSide() == Side.SELL)
-                                                        .map(order -> 1L).reduce(0L, Long::sum);  
+                                                         .filter(order -> order.getSide() == Side.SELL)
+                                                         .map(order -> 1L).reduce(0L, Long::sum);  
 
             final long sellOrdersTotalOrderedQuantityAfter9thTick = state.getChildOrders().stream()
-                                                                        .filter(order -> order.getSide() == Side.SELL)
-                                                                        .map(ChildOrder::getQuantity)
-                                                                        .reduce(Long::sum).orElse(0L);                                                                                                                                     
+                                                                         .filter(order -> order.getSide() == Side.SELL)
+                                                                         .map(ChildOrder::getQuantity)
+                                                                         .reduce(Long::sum).orElse(0L);                                                                                                                                     
 
             final long sellOrdersFilledQuantityAfter9thTick = state.getChildOrders().stream()
-                                                                .filter(order -> order.getSide() == Side.SELL)
-                                                                .map(ChildOrder::getFilledQuantity)
-                                                                .reduce(Long::sum).orElse(0L);
+                                                                   .filter(order -> order.getSide() == Side.SELL)
+                                                                   .map(ChildOrder::getFilledQuantity)
+                                                                   .reduce(Long::sum).orElse(0L);
 
             final long sellOrdersUnfilledQuantityAfter9thTick = sellOrdersTotalOrderedQuantityAfter9thTick - sellOrdersFilledQuantityAfter9thTick; 
 
             final long cancelledOrderCountAfter9thTick = state.getChildOrders().stream()
-                                                            .filter(order -> order.getState() == 3)
-                                                            .map(order -> 1L).reduce(0L, Long::sum);
+                                                              .filter(order -> order.getState() == 3)
+                                                              .map(order -> 1L).reduce(0L, Long::sum);
 
             //Check things like filled quantity, cancelled order count etc...
-            assertEquals(8, totalOrdersCountAfter9thTick); 
+            assertEquals(9, totalOrdersCountAfter9thTick); 
             assertEquals(7, buyOrderCountAfter9thTick);
-            assertEquals(1, sellOrderCountAfter9thTick); 
+            assertEquals(2, sellOrderCountAfter9thTick); 
             assertEquals(1400, buyOrdersTotalOrderedQuantityAfter9thTick); 
             assertEquals(701, buyOrdersFilledQuantityAfter9thTick);
             assertEquals(699, buyOrdersUnfilledQuantityAfter9thTick);
-            assertEquals(501, sellOrdersTotalOrderedQuantityAfter9thTick); 
-            assertEquals(501, sellOrdersFilledQuantityAfter9thTick); 
+            assertEquals(701, sellOrdersTotalOrderedQuantityAfter9thTick); 
+            assertEquals(701, sellOrdersFilledQuantityAfter9thTick); 
             assertEquals(0, sellOrdersUnfilledQuantityAfter9thTick);
-            assertEquals(4, activeChildOrdersAfter9thTick);
+            assertEquals(5, activeChildOrdersAfter9thTick);
             assertEquals(4, cancelledOrderCountAfter9thTick);
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 10TH TICK
-        // Best Bid 107, Best Ask 111; Spread = 4
+        // Best Bid 106, Best Ask 110; Spread = 4
         // The state should have 8 Buy orders with partial fills as in 8th tick; 4 active, 4 cancelled
-        // No more Buy order should be created as the spread is wide
-        // No sell orders 
+        // Previous buy order at 104 should be sold and filled at 106
+        // No more Buy order should be created as the spread is wide 
 
         send(createTick10());
 
@@ -1074,9 +1073,9 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                          .map(order -> 1L).reduce(0L, Long::sum);
 
             final long buyOrdersTotalOrderedQuantityAfter10thTick = state.getChildOrders().stream()
-                                                                        .filter(order -> order.getSide() == Side.BUY) 
-                                                                        .map(ChildOrder::getQuantity)
-                                                                        .reduce (Long::sum).orElse(0L);
+                                                                         .filter(order -> order.getSide() == Side.BUY) 
+                                                                         .map(ChildOrder::getQuantity)
+                                                                         .reduce (Long::sum).orElse(0L);
 
             final long buyOrdersFilledQuantityAfter10thTick = state.getChildOrders().stream()
                                                                    .filter(order -> order.getSide() == Side.BUY)                
@@ -1092,7 +1091,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final long sellOrdersTotalOrderedQuantityAfter10thTick = state.getChildOrders().stream()
                                                                           .filter(order -> order.getSide() == Side.SELL)
                                                                           .map(ChildOrder::getQuantity)
-                                                                         .reduce(Long::sum).orElse(0L);                                                                                                                                     
+                                                                          .reduce(Long::sum).orElse(0L); 
 
             final long sellOrdersFilledQuantityAfter10thTick = state.getChildOrders().stream()
                                                                     .filter(order -> order.getSide() == Side.SELL)
@@ -1106,18 +1105,22 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                                .map(order -> 1L).reduce(0L, Long::sum);
 
             //Check things like filled quantity, cancelled order count etc...
-            assertEquals(8, totalOrdersCountAfter10thTick); 
+            assertEquals(9, totalOrdersCountAfter10thTick); 
             assertEquals(7, buyOrderCountAfter10thTick);
-            assertEquals(1, sellOrderCountAfter10thTick); 
+            assertEquals(2, sellOrderCountAfter10thTick); 
             assertEquals(1400, buyOrdersTotalOrderedQuantityAfter10thTick); 
             assertEquals(701, buyOrdersFilledQuantityAfter10thTick);
             assertEquals(699, buyOrdersUnfilledQuantityAfter10thTick);
-            assertEquals(501, sellOrdersTotalOrderedQuantityAfter10thTick); 
-            assertEquals(501, sellOrdersFilledQuantityAfter10thTick); 
+            assertEquals(701, sellOrdersTotalOrderedQuantityAfter10thTick); 
+            assertEquals(701, sellOrdersFilledQuantityAfter10thTick); 
             assertEquals(0, sellOrdersUnfilledQuantityAfter10thTick);
-            assertEquals(4, activeChildOrdersAfter10thTick);
-            assertEquals(4, cancelledOrderCountAfter10thTick);            
-            
+            assertEquals(5, activeChildOrdersAfter10thTick);
+            assertEquals(4, cancelledOrderCountAfter10thTick);
+
+        send(createTick11());
+
+        final String updatedOrderBook11 = Util.orderBookToString(container.getState()); 
+
 
         System.out.println("\n\n ----================================ SUMMARY AFTER CREATING, MATCHING AND CANCELLING ORDERS ==============================---- \n");
 
@@ -1191,6 +1194,60 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                             " | State of the order: " + childOrder.getState());
         }
 
+        // Calculate total cost for all filled buy orders (before fees)
+        final long totalBuyCostBeforeFees = state.getChildOrders().stream()
+        .filter(order -> order.getSide() == Side.BUY)
+        .filter(order -> order.getFilledQuantity() > 0)
+        .mapToLong(order -> order.getPrice() * order.getFilledQuantity())
+        .sum();
+
+        // Calculate total revenue from all filled sell orders (before fees)
+        final long totalSellRevenueBeforeFees = state.getChildOrders().stream()
+                                                     .filter(order -> order.getSide() == Side.SELL)
+                                                     .filter(order -> order.getFilledQuantity() > 0)
+                                                     .mapToLong(order -> order.getPrice() * order.getFilledQuantity())
+                                                     .sum();
+
+        // Define broker fee as a percentage (0.1% or 0.001 in decimal)
+        final double brokerFeeRate = 0.001;
+
+        // Calculate total cost for all filled buy orders including broker fees
+        final long totalBuyCostAfterFees = state.getChildOrders().stream()
+                                                .filter(order -> order.getSide() == Side.BUY)
+                                                .filter(order -> order.getFilledQuantity() > 0)
+                                                .mapToLong(order -> {
+                                                            long cost = order.getPrice() * order.getFilledQuantity();
+                                                            long fee = (long) (cost * brokerFeeRate); // Apply fee to each buy order
+                                                            return cost + fee;
+                                                })
+                                                .sum();
+
+        // Calculate total revenue from all filled sell orders including broker fees
+        final long totalSellRevenueAfterFees = state.getChildOrders().stream()
+                                                    .filter(order -> order.getSide() == Side.SELL)
+                                                    .filter(order -> order.getFilledQuantity() > 0)
+                                                    .mapToLong(order -> {
+                                                        long revenue = order.getPrice() * order.getFilledQuantity();
+                                                        long fee = (long) (revenue * brokerFeeRate); // Apply fee to each sell order
+                                                        return revenue - fee;
+                                                    })
+                                                    .sum();
+
+
+        // Calculate profit before and after fees
+        final long grossProfitBeforeFees = totalSellRevenueBeforeFees - totalBuyCostBeforeFees;
+        final long netProfitAfterFees = totalSellRevenueAfterFees - totalBuyCostAfterFees;
+        final long costOfTrading = grossProfitBeforeFees - netProfitAfterFees;
+
+        System.out.println("\nPROFIT CALCULATION AND COST OF TRADING");
+        System.out.println("Total Buy Cost Before Broker Fees:      " +  totalBuyCostBeforeFees);
+        System.out.println("Total Buy Cost After Broker Fees:       " +  totalBuyCostAfterFees);
+        System.out.println("Total Sell Revenue Before Broker Fees:  " +  totalSellRevenueBeforeFees);        
+        System.out.println("Total Sell Revenue After Broker Fees:   " +  totalSellRevenueAfterFees);
+        System.out.println("\nGross Profit After Broker Fees:         " +  grossProfitBeforeFees); 
+        System.out.println("Net Profit After  Broker Fees:          " +  netProfitAfterFees); 
+        System.out.println("              Cost of trading:          " + grossProfitBeforeFees + " - " + netProfitAfterFees + " = " +  costOfTrading);         
+
 
         System.out.println("\nTHE STATE OF THE ORDER BOOK AFTER PROCESSING DATA FROM 1ST TICK " +         
                             "AND CREATING ORDERS LOOKED LIKE THIS \n\n: " +  updatedOrderBook1);
@@ -1222,6 +1279,8 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
         System.out.println("\nTHE STATE OF THE ORDER BOOK AFTER PROCESSING DATA FROM 10TH TICK " +
         "NOW LOOKS LIKE THIS \n\n: " +  updatedOrderBook10);                                   
 
+        System.out.println("\nTHE STATE OF THE ORDER BOOK AFTER PROCESSING DATA FROM 11TH TICK " +
+        "NOW LOOKS LIKE THIS \n\n: " +  updatedOrderBook11);         
     }        
 
 }
