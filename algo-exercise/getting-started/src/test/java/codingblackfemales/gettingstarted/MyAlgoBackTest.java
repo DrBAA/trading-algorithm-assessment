@@ -655,11 +655,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
                                                                       .map(ChildOrder::getFilledQuantity)
                                                                       .reduce(Long::sum).orElse(0L);
 
-            final long totalBuyOrderUnfilledQuantityAfter6thTick = totalBuyOrderedQuantityAfter6thTick - totalBuyOrderFilledQuantityAfter6thTick;   
-
-            final long buyActiveOrderCountAfter6thTick = state.getChildOrders().stream()
-                                                              .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                              .map(order6thTick -> 1L).reduce(0L, Long::sum);
+            final long totalBuyOrderUnfilledQuantityAfter6thTick = totalBuyOrderedQuantityAfter6thTick - totalBuyOrderFilledQuantityAfter6thTick;
 
             final long sellOrderCountAfter6thTick = state.getChildOrders().stream()
                                                          .filter(order6thTick -> order6thTick.getSide() == Side.SELL)
