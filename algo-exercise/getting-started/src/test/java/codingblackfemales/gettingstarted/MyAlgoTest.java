@@ -196,7 +196,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
             assertEquals(true, spreadIsBelowOrEqualsToSpreadThreshhold);
             assertEquals(false, spreadIsAboveOrEqualsToSpreadThreshhold);
 
-            //assert that we created 5 Buy orders for 200 shares and no Sell orders
+            //assert that we created 5 Buy orders for 200 shares at 99 and no Sell orders
 
             assertEquals(5, container.getState().getActiveChildOrders().size()); 
 
@@ -206,7 +206,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
                         assertEquals(200, childOrder.getQuantity());
                         assertEquals(true, childOrder.getSide() == Side.BUY);
                         assertEquals(true, childOrder.getSide() != Side.SELL);
-                        // assertEquals(98, childOrder.getPrice());                
+                        assertEquals(99, childOrder.getPrice());                
 
                         System.out.println("Order ID: " + childOrder.getOrderId() + 
                                         " | Side: " + childOrder.getSide() +            
@@ -261,7 +261,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
             assertEquals(true, spreadIsBelowOrEqualsToSpreadThreshhold);
             assertEquals(false, spreadIsAboveOrEqualsToSpreadThreshhold);        
 
-            //assert that we created 5 Buy orders for 200 shares and no Sell orders
+            //assert that we created 5 Buy orders for 200 shares at 98 and no Sell orders
             assertEquals(5, container.getState().getActiveChildOrders().size()); 
 
             if (!container.getState().getActiveChildOrders().isEmpty()) {                  
@@ -270,7 +270,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
                         assertEquals(200, childOrder.getQuantity());
                         assertEquals(true, childOrder.getSide() == Side.BUY);
                         assertEquals(true, childOrder.getSide() != Side.SELL);
-                        // assertEquals(98, childOrder.getPrice());                
+                        assertEquals(98, childOrder.getPrice());                
 
                         System.out.println("Order ID: " + childOrder.getOrderId() + 
                                         " | Side: " + childOrder.getSide() +            
