@@ -593,7 +593,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(2, activeChildOrdersAfter4thTick);                                 
             assertEquals(3, cancelledChildOrdersAfter4thTick);
 
-            // check that the last cancelled order in the list is at the price of 98
+            // check that the last order in the list is cancelled
             Optional<ChildOrder> lastOrderAfter4thTickIsCancelled = state.getChildOrders().stream()
                                                                          .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
                                                                          .filter(order6thTick -> order6thTick.getState() == OrderState.CANCELLED)
