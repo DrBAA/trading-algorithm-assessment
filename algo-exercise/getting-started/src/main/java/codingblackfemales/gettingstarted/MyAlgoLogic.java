@@ -101,52 +101,46 @@ public class MyAlgoLogic implements AlgoLogic {
 
             for (ChildOrder theOrder : activeChildOrders) {
 
-                if (theOrder.getSide() == Side.BUY) {
-                    theOrderId = theOrder.getOrderId();
-                    theOrderSide = theOrder.getSide();
-                    theOrderQuantity = theOrder.getQuantity();                    
-                    theOrderPrice = theOrder.getPrice();
-                    theOrderFilledQuantity = theOrder.getFilledQuantity();               
+                // initialise the above variables
+                theOrderId = theOrder.getOrderId();
+                theOrderSide = theOrder.getSide();
+                theOrderQuantity = theOrder.getQuantity();                    
+                theOrderPrice = theOrder.getPrice();
+                theOrderFilledQuantity = theOrder.getFilledQuantity();               
 
-                    // Define a price reversal threshold (in price points)            
-                    final long priceReversalThreshold = 7L;  // was 10L
+                // Define a price reversal threshold (in price points)            
+                final long priceReversalThreshold = 7L;  // was 10L
 
-                    // Check if the order is partially filled or not filled at all and whether Best ask price is above the defined threshold
-                    if ((bestAskPrice >= (theOrderPrice + priceReversalThreshold)) && (theOrderFilledQuantity < theOrderQuantity)){
+                // Check if the order is partially filled or not filled at all and whether Best ask price is above the defined threshold
+                if ((bestAskPrice >= (theOrderPrice + priceReversalThreshold)) && (theOrderFilledQuantity < theOrderQuantity)){
 
-                        // Calculate the remaining unfilled quantity
-                        theOrderUnfilledQuantity = theOrderQuantity - theOrderFilledQuantity;
+                    // Calculate the remaining unfilled quantity
+                    theOrderUnfilledQuantity = theOrderQuantity - theOrderFilledQuantity;
 
-                            // Log the details of the unfilled or partially filled orders
-                            logger.info("[MYALGO] CANCEL CONDITIONS - Partially filled or Non filled order found. " +
-                                        " Order ID: " + theOrderId +
-                                        " Side: " + theOrderSide +
-                                        ", Ordered Qty: " + theOrderQuantity +
-                                        ", Price: " + theOrderPrice +                                            
-                                        ", Filled Qty: " + theOrderFilledQuantity  +
-                                        ", Unfilled Qty: " + theOrderUnfilledQuantity);
+                        // Log the details of the unfilled or partially filled orders
+                        logger.info("[MYALGO] CANCEL CONDITIONS - Partially filled or Non filled order found. " +
+                                    " Order ID: " + theOrderId +
+                                    " Side: " + theOrderSide +
+                                    ", Ordered Qty: " + theOrderQuantity +
+                                    ", Price: " + theOrderPrice +                                            
+                                    ", Filled Qty: " + theOrderFilledQuantity  +
+                                    ", Unfilled Qty: " + theOrderUnfilledQuantity);
 
-                            // if the ASK price moves up by or above the defined threshold, cancel the unfilled part of the order 
-                            logger.info("[MYALGO] CANCEL CONDITIONS - BesAsk is: " + bestAskPrice + " theOrderPrice is  : " + theOrderPrice);
-                            logger.info("[MYALGO] CANCEL CONDITIONS - price reversal threshold is " + priceReversalThreshold + " points.");
-                            logger.info("[MYALGO] CANCEL CONDITIONS - Ask price moved against buy order. " +
-                                        " Cancelling order ID: " + theOrderId +
-                                        ", Unfilled Qty: " + (theOrderUnfilledQuantity));
+                        // if the ASK price moves up by or above the defined threshold, cancel the unfilled part of the order 
+                        logger.info("[MYALGO] CANCEL CONDITIONS - BesAsk is: " + bestAskPrice + " theOrderPrice is  : " + theOrderPrice);
+                        logger.info("[MYALGO] CANCEL CONDITIONS - price reversal threshold is " + priceReversalThreshold + " points.");
+                        logger.info("[MYALGO] CANCEL CONDITIONS - Ask price moved against buy order. " +
+                                    " Cancelling order ID: " + theOrderId +
+                                    ", Unfilled Qty: " + (theOrderUnfilledQuantity));
 
-                        return new CancelChildOrder(theOrder);
-                        
-                    }
-                    else {
-                        // If there are no unfilled quantities OR ask price has not moved beyond the threshold, log that the order remains active
-                        logger.info("[MYALGO] CANCEL CONDITIONS  - there are no unfilled quantities or Ask price is stil under threshold. " + 
-                                    "Buy order to remain active");
-                    }
-
-                }                     
-                else {
-                    // if it was not a buy order, log this and take no action
-                    logger.info("[MYALGO] CANCEL CONDITIONS -  This was not a buy order. No action taken.");
+                    return new CancelChildOrder(theOrder);
+                    
                 }
+                else {
+                    // If there are no unfilled quantities OR ask price has not moved beyond the threshold, log that the order remains active
+                    logger.info("[MYALGO] CANCEL CONDITIONS  - there are no unfilled quantities or Ask price is stil under threshold. " + 
+                                "Buy order to remain active");
+                    } 
 
             }
 
