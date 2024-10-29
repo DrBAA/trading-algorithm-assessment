@@ -314,8 +314,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last buy order in the list is at the price of 98                            
             Optional<ChildOrder> lastOrderAfter1stTickIs98 = state.getChildOrders().stream()
-                                                                  .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
-                                                                  .filter(order5thTick -> order5thTick.getPrice() == 98L)
+                                                                  .filter(order1stTick -> order1stTick.getSide() == Side.BUY)
+                                                                  .filter(order1stTick -> order1stTick.getPrice() == 98L)
                                                                   .reduce((first, second) -> second);
 
             ChildOrder lastBoughtPriceIs98After1stTick = lastOrderAfter1stTickIs98.orElseThrow(() ->
@@ -387,8 +387,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last buy order in the list is at the price of 98                            
             Optional<ChildOrder> lastOrderAfter2ndTickIs98 = state.getChildOrders().stream()
-                                                                  .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
-                                                                  .filter(order5thTick -> order5thTick.getPrice() == 98L)
+                                                                  .filter(order2ndTick -> order2ndTick.getSide() == Side.BUY)
+                                                                  .filter(order2ndTick -> order2ndTick.getPrice() == 98L)
                                                                   .reduce((first, second) -> second);
 
             ChildOrder lastBoughtPriceIs98After2ndTick = lastOrderAfter2ndTickIs98.orElseThrow(() ->
@@ -448,7 +448,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             // check for best bid and best ask prices, the spread, spread threshold and price reversal threshold
             assertEquals(96, bestBidPrice3rdTick);
             assertEquals(103, bestAskPrice3rdTick);
-            assertEquals(98,previousBoughtPrice2ndTick);            
+            assertEquals(98, previousBoughtPrice2ndTick);            
             assertEquals(7, spread3rdTick);
             assertEquals(false, spreadIsBelowOrEqualToSpreadThreshhold3rdTick);
             assertEquals(true, spreadIsAboveOrEqualToSpreadThreshhold3rdTick);
@@ -464,8 +464,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last buy order in the list is at the price of 98                            
             Optional<ChildOrder> lastOrderAfter3rdTickIs98 = state.getChildOrders().stream()
-                                                       .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
-                                                       .filter(order5thTick -> order5thTick.getPrice() == 98L)
+                                                       .filter(order3rdTick -> order3rdTick.getSide() == Side.BUY)
+                                                       .filter(order3rdTick -> order3rdTick.getPrice() == 98L)
                                                        .reduce((first, second) -> second);
 
             ChildOrder lastBoughtPriceIs98After3rdTick = lastOrderAfter3rdTickIs98.orElseThrow(() ->
@@ -550,8 +550,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last buy order in the list is at the price of 98                            
             Optional<ChildOrder> lastOrderAfter4thTickIs98 = state.getChildOrders().stream()
-                                                       .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
-                                                       .filter(order5thTick -> order5thTick.getPrice() == 98L)
+                                                       .filter(order4thTick -> order4thTick.getSide() == Side.BUY)
+                                                       .filter(order4thTick -> order4thTick.getPrice() == 98L)
                                                        .reduce((first, second) -> second);
 
             ChildOrder lastBoughtPriceIs98After4thTick = lastOrderAfter4thTickIs98.orElseThrow(() ->
@@ -595,8 +595,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last order in the list is cancelled
             Optional<ChildOrder> lastOrderAfter4thTickIsCancelled = state.getChildOrders().stream()
-                                                                         .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
-                                                                         .filter(order6thTick -> order6thTick.getState() == OrderState.CANCELLED)
+                                                                         .filter(order4thTick -> order4thTick.getSide() == Side.BUY)
+                                                                         .filter(order4thTick -> order4thTick.getState() == OrderState.CANCELLED)
                                                                          .reduce((first, second) -> second);
 
             ChildOrder lastCancelledOrder4thTick = lastOrderAfter4thTickIsCancelled.orElseThrow(() ->
@@ -789,7 +789,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last order after 6th tick is cancelled 
             Optional<ChildOrder> lastOrderAfter6thTickIsCancelled = state.getChildOrders().stream()
-                                                                         .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
+                                                                         .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
                                                                          .filter(order6thTick -> order6thTick.getState() == OrderState.CANCELLED)
                                                                          .reduce((first, second) -> second);
 
@@ -841,8 +841,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last order in the list is at the price of 103                            
             Optional<ChildOrder> lastOrderIs103After7thTick = state.getChildOrders().stream()
-                                                                   .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                                   .filter(order6thTick -> order6thTick.getPrice() == 103L)
+                                                                   .filter(order7thTick -> order7thTick.getSide() == Side.BUY)
+                                                                   .filter(order7thTick -> order7thTick.getPrice() == 103L)
                                                                    .reduce((first, second) -> second);
 
             ChildOrder lastOrderAfter7thTick = lastOrderIs103After7thTick.orElseThrow(() ->
@@ -932,8 +932,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last order in the list is at the price of 103                            
             Optional<ChildOrder> lastOrderIs103After8thTick = state.getChildOrders().stream()
-                                                                   .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                                   .filter(order6thTick -> order6thTick.getPrice() == 103L)
+                                                                   .filter(order8thTick -> order8thTick.getSide() == Side.BUY)
+                                                                   .filter(order8thTick -> order8thTick.getPrice() == 103L)
                                                                    .reduce((first, second) -> second);
 
             ChildOrder lastOrderAfter8thTick = lastOrderIs103After8thTick.orElseThrow(() ->
@@ -1065,8 +1065,8 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last order in the list is cancelled
             Optional<ChildOrder> lastOrderAfter9thTickIsCancelled = state.getChildOrders().stream()
-                                                                         .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
-                                                                         .filter(order6thTick -> order6thTick.getState() == OrderState.CANCELLED)
+                                                                         .filter(order9thTick -> order9thTick.getSide() == Side.BUY)
+                                                                         .filter(order9thTick -> order9thTick.getState() == OrderState.CANCELLED)
                                                                          .reduce((first, second) -> second);
 
             ChildOrder lastCancelledOrder9thTick = lastOrderAfter9thTickIsCancelled.orElseThrow(() ->
@@ -1209,6 +1209,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     }
 
 }
+
 
 
 

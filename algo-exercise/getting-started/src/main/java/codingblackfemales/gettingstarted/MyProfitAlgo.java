@@ -208,10 +208,10 @@ public class MyProfitAlgo implements AlgoLogic {
 
 
         // Set the minimum buy filled quantity required to initiate a sell
-        final long sellQuantityThreshold = 100;
+        final long minimumSellQuantityThreshold = 50;
 
         // Check for sufficient available quantity 
-        if (remainingQuantityToSell >= sellQuantityThreshold) {
+        if (remainingQuantityToSell >= minimumSellQuantityThreshold){
 
             // check if market conditions are favourable to sell
             if (lastBoughtPrice > 0
