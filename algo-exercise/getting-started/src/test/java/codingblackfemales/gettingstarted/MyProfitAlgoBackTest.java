@@ -603,10 +603,10 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 4TH TICK
         // Best Bid = 98, Best Ask = 105, Spread = 7 points. Previous bought price 98
-        // There should be 5 Buy orders as in tick 3, some filled
         // No new Buy orders should be created after the 4th tick as the spread has widened
         // 3 Buy orders should be cancelled as the spread has widened
-        // No Sell order should created as the conditions not met
+        // No Sell order should be created as the conditions not met
+        // There should be 5 Buy orders as in tick 3, some filled     
 
         send(createTick4());
         
@@ -645,15 +645,12 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
 
             // check that the last buy order in the list is at the price of 98                            
             Optional<ChildOrder> lastOrderAfter4thTickIs98 = state.getChildOrders().stream()
-                                                                  .filter(order3rdTick -> order3rdTick.getSide() == Side.BUY)
-                                                                  .filter(order3rdTick -> order3rdTick.getPrice() == 98L)
+                                                                  .filter(order4thTick -> order4thTick.getSide() == Side.BUY)
+                                                                  .filter(order4thTick -> order4thTick.getPrice() == 98L)
                                                                   .reduce((first, second) -> second);
 
-            ChildOrder lastBoughtPriceIs98After4thTick = lastOrderAfter4thTickIs98.orElseThrow(() ->
-                                                                                                  new AssertionError("Expected the last buy order for 98 but found something else"));
-
-            // assert to check that the last bought price is 98
-            assertEquals(98, lastBoughtPriceIs98After4thTick.getPrice());
+            ChildOrder lastBoughtPriceAfter4thTickIs98 = lastOrderAfter4thTickIs98.orElseThrow(() ->
+                                                         new AssertionError("Expected the last buy order for 98 but found something else"));
             
             final int totalOrdersCountAfter4thTick = container.getState().getChildOrders().size();
 
@@ -679,8 +676,17 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
 
             final long cancelledBuyChildOrdersAfter4thTick = state.getChildOrders().stream()
                                                                   .filter(order -> order.getSide() == Side.BUY)
-                                                                  .filter(order6thTick -> order6thTick.getState() == OrderState.CANCELLED)
-                                                                  .count();        
+                                                                  .filter(order4thTick -> order4thTick.getState() == OrderState.CANCELLED)
+                                                                  .count();
+
+            Optional<ChildOrder> cancelledOrderPriceAfter4thTickIs98 = state.getChildOrders().stream()
+                                                                            .filter(order -> order.getSide() == Side.BUY)
+                                                                            .filter(order4thTick -> order4thTick.getState() == OrderState.CANCELLED)
+                                                                            .filter(order4thTick -> order4thTick.getPrice() == 98L)
+                                                                            .reduce((first, second) -> second);
+
+            final ChildOrder lastCancelledBuyOrderPriceAfter4thTickIs98 = cancelledOrderPriceAfter4thTickIs98.orElseThrow(() -> 
+                                                                          new AssertionError("Expected a buy order cancelled price for 98 but found something else"));
             
 
             assertEquals(5, totalOrdersCountAfter4thTick);
@@ -691,14 +697,19 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(499, notFilledQuantityAfter4thTick);
             assertEquals(2, activeChildOrdersAfter4thTick);            
             assertEquals(3, cancelledBuyChildOrdersAfter4thTick); 
+            assertEquals(98, lastBoughtPriceAfter4thTickIs98.getPrice());            
+            assertEquals(98, lastCancelledBuyOrderPriceAfter4thTickIs98.getPrice());
+
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 5TH TICK
-        // Best Bid = 102, Best Ask = 106, Spread = 4 points, average bought price: 98 
-        // Bid & Ask price has moved above average bought price + 2 points. Ask price has moved above previous bought price + 10 points
-        // 1 new Sell order should be created as market data has moved above our average bought price
+        // Best Bid = 102, Best Ask = 106, Spread = 4 points, last bought price: 98 
+        // Bid & Ask price has moved above last  bought price + 2 points.
+        // 1 new Sell order should be created as market data has moved above our last bought price
+        // Ask price has moved above previous bought price by 7 points or more
         // No new buy orders to be created  as the spread has widened
         // The state should have 6 orders; 3 active, 3 cancelled
+
         // AFTTER BUGS WERE FIXED FROM 17/10/2024 - ADJUSTED SELL ORDER PRICE FROM BEST ASK TO BEST BID PRICE.
         // ORDER GOT FILLED STRAIGHT AWAY FOR 501 AT 102
 
@@ -711,7 +722,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final AskLevel bestAsk5thTick = state.getAskAt(0);
             final long bestBidPrice5thTick = bestBid5thTick.getPrice();
             final long bestAskPrice5thTick = bestAsk5thTick.getPrice();
-            final long previousBoughtPrice4thTick = lastBoughtPriceIs98After4thTick.getPrice();
+            final long previousBoughtPrice4thTick = lastBoughtPriceAfter4thTickIs98.getPrice();
 
             // Define the spread threshold (in price points)
             final long spread5thTick = Math.abs(bestAskPrice5thTick - bestBidPrice5thTick); 
@@ -774,12 +785,8 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                                            .reduce((first, second) -> second);
 
 
-            final ChildOrder lastBoughtPriceIs98After5thTick = lastBuyOrderAfter5thTickIs98.orElseThrow(() -> 
-                                                                                                           new AssertionError("Expected a BuY order for 102 but found something else"));
-
-            // assert that we have created a new sell order at the price of 104
-            assertEquals(98, lastBoughtPriceIs98After5thTick.getPrice());  
-
+            final ChildOrder lastBoughtPriceAfter5thTickIs98 = lastBuyOrderAfter5thTickIs98.orElseThrow(() -> 
+                                                               new AssertionError("Expected a BuY order for 102 but found something else"));
                                                               
             // check that the last sell order in the list is at the price of 102                            
             final Optional<ChildOrder> lastSellOrderAfter5thTickIs102 = state.getChildOrders().stream()
@@ -788,15 +795,11 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                                              .reduce((first, second) -> second);
 
             final ChildOrder newSellOrderAfter5thTickIs102 = lastSellOrderAfter5thTickIs102.orElseThrow(() -> 
-                                                                                                           new AssertionError("Expected a Sell order for 102 but found something else"));
-
-            // assert that we have created a new sell order at the price of 104
-            assertEquals(102, newSellOrderAfter5thTickIs102.getPrice());
-
+                                                             new AssertionError("Expected a Sell order for 102 but found something else"));
 
             // Check things like filled quantity, cancelled order count etc....
 
-            assertEquals(6, totalOrdersCountAfter5thTick); // expected 6 but was 9
+            assertEquals(6, totalOrdersCountAfter5thTick); 
             assertEquals(5, buyOrderCountAfter5thTick); 
             assertEquals(1, sellOrderCountAfter5thTick); 
             assertEquals(501, sellOrdersTotalQuantityAfter5thTick);
@@ -805,14 +808,15 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(501, buyOrdersfilledQuantityAfter5thTick);                                              
             assertEquals(1000, unfilledQuantityAfter5thTick);
             assertEquals(3, activeChildOrdersAfter5thTick);             
-            assertEquals(3, cancelledOrderCountAfter5thTick);                               
-
+            assertEquals(3, cancelledOrderCountAfter5thTick); 
+            assertEquals(98, lastBoughtPriceAfter5thTickIs98.getPrice());
+            assertEquals(102, newSellOrderAfter5thTickIs102.getPrice());
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 6TH TICK
         // Best bid = 102; Best Ask = 104; Spread = 2.
-        // The state should have one Sell order and 5 Buy orders as in previous ticks; 3 cancelled, 3 active
-        // 2 new Buy orders to be created as the list has 3 active orders
+        // The state should have 1 Sell order and 7 Buy orders as in previous ticks; 5 active, 3 cancelled
+        // 2 new Buy orders to be created at 102 as the list has 3 active orders
 
         send(createTick6());
 
@@ -823,7 +827,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final AskLevel bestAsk6thTick = state.getAskAt(0);
             final long bestBidPrice6thTick = bestBid6thTick.getPrice();
             final long bestAskPrice6thTick = bestAsk6thTick.getPrice();
-            final long previousBoughtPrice5thTick = lastBoughtPriceIs98After5thTick.getPrice();
+            final long previousBoughtPrice5thTick = lastBoughtPriceAfter5thTickIs98.getPrice();
 
             // Define the spread threshold (in price points)
             final long spread6thTick = Math.abs(bestAskPrice6thTick - bestBidPrice6thTick); 
@@ -839,19 +843,6 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(true, spreadIsBelowOrEqualToSpreadThreshhold6thTick);
             assertEquals(false, spreadIsAboveOrEqualToSpreadThreshhold6thTick);
             assertEquals(6, priceReversalThreshhold6thTick);
-
-            // check that the last buy order in the list is at the price of 102                            
-            final Optional<ChildOrder> lastBuyOrderAfter6thTickIs102 = state.getChildOrders().stream()
-                                                                            .filter(order5thTick -> order5thTick.getSide() == Side.BUY)
-                                                                            .filter(order5thTick -> order5thTick.getPrice() == 102)
-                                                                            .reduce((first, second) -> second);
-
-            final ChildOrder lastBoughtPriceIs102After6thTick = lastBuyOrderAfter6thTickIs102.orElseThrow(() ->
-                                                                                                            new AssertionError("Expected a Buy order for 102 but found something else"));
-
-            // assert that we have created a new sell order at the price of 104
-            assertEquals(102, lastBoughtPriceIs102After6thTick.getPrice());  
-
             
             final int totalOrdersCountAfter6thTick = container.getState().getChildOrders().size();
 
@@ -863,8 +854,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final long sellOrderCountAfter6thTick = state.getChildOrders().stream()
                                                          .filter(order -> order.getSide() == Side.SELL)
                                                          .map(order -> 1L)
-                                                         .reduce(0L, Long::sum);                
-
+                                                         .reduce(0L, Long::sum);
 
             final long buyOrdersTotalOrderedQuantityAfter6thTick = state.getChildOrders().stream()
                                                                         .filter(order -> order.getSide() == Side.BUY) // filter by Sell orders                
@@ -874,13 +864,12 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final long sellOrdersTotalOrderedQuantityAfter6thTick = state.getChildOrders().stream()
                                                                          .filter(order -> order.getSide() == Side.SELL) // filter by Sell orders                
                                                                          .map(ChildOrder::getQuantity)
-                                                                         .reduce (Long::sum).orElse(0L);                                                                               
+                                                                         .reduce (Long::sum).orElse(0L);    
 
             final long buyOrdersFilledQuantityAfter6thTick = state.getChildOrders().stream()
                                                                   .filter(order -> order.getSide() == Side.BUY) // filter by Sell orders
                                                                   .map(ChildOrder::getFilledQuantity)
-                                                                  .reduce(Long::sum).orElse(0L);
-                                                                    
+                                                                  .reduce(Long::sum).orElse(0L);                                                                   
 
             final long sellOrdersFilledQuantityAfter6thTick = state.getChildOrders().stream()
                                                                    .filter(order -> order.getSide() == Side.SELL) // filter by Sell orders
@@ -889,24 +878,23 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
 
             final long sellOrdersUnfilledQuantityAfter6thTick = sellOrdersTotalOrderedQuantityAfter6thTick  - sellOrdersFilledQuantityAfter6thTick;
 
-
             final int activeChildOrdersAfter6thTick = container.getState().getActiveChildOrders().size();
 
             final int cancelledChildOrdersAfter6thTick = totalOrdersCountAfter6thTick - activeChildOrdersAfter6thTick;
 
-            // check that the last order in the list is at the price of 102                            
-            final Optional<ChildOrder> lastBuyOrderIs102 = state.getChildOrders().stream()
-                                                                .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                                .filter(order6thTick -> order6thTick.getPrice() == 102L)
-                                                                .reduce((first, second) -> second);
+            // check that the last buy order in the list is at the price of 102                            
+            final Optional<ChildOrder> lastBuyOrderAfter6thTickIs102 = state.getChildOrders().stream()
+                                                                            .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
+                                                                            .filter(order6thTick -> order6thTick.getPrice() == 102)
+                                                                            .reduce((first, second) -> second);
 
-            final ChildOrder newBuyOrderIs102 = lastBuyOrderIs102.orElseThrow(() ->
-                                                                                new AssertionError ("Expected a buy order for 102 but found something else"));
+            final ChildOrder lastBoughtPriceAfter6thTickIs102 = lastBuyOrderAfter6thTickIs102.orElseThrow(() ->
+                                                                new AssertionError("Expected a Buy order for 102 but found something else"));
 
-            // assert that we have created a new buy order at the price of 102
-            assertEquals(102, newBuyOrderIs102.getPrice());
+            final ChildOrder newBuyOrderAfter6thTickIs102 = lastBuyOrderAfter6thTickIs102.orElseThrow(() ->
+                                                            new AssertionError ("Expected a buy order for 102 but found something else"));
 
-
+    
             //Check things like filled quantity, cancelled order count etc....                                                             
             assertEquals(8, totalOrdersCountAfter6thTick); // 25/10/2024 - EXPECTED 8 BUT WAS 9
             assertEquals(7, buyOrderCountAfter6thTick);
@@ -918,11 +906,11 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(0, sellOrdersUnfilledQuantityAfter6thTick);
             assertEquals(5, activeChildOrdersAfter6thTick);
             assertEquals(3, cancelledChildOrdersAfter6thTick);
-
+            assertEquals(102, newBuyOrderAfter6thTickIs102.getPrice());
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 7TH TICK
         // Best bid = 100; Best Ask = 102; Spread = 2.
-        // 2 new Buy order to be partially filled at 102
+        // Buy orders of 102 to be partially filled at 102
         // No more sell order to be created as there are no more cancelled orders with unfilled quantities         
         // The state should have 1 Sell order and 7 Buy orders; 5 active, 3 cancelled
 
@@ -936,7 +924,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final AskLevel bestAsk7thTick = state.getAskAt(0);
             final long bestBidPrice7thTick = bestBid7thTick.getPrice();
             final long bestAskPrice7thTick = bestAsk7thTick.getPrice();
-            final long previousBoughtPrice6thTick = lastBoughtPriceIs102After6thTick.getPrice();
+            final long previousBoughtPrice6thTick = lastBoughtPriceAfter6thTickIs102.getPrice();
 
             // Define the spread threshold (in price points)
             final long spread7thTick = Math.abs(bestAskPrice7thTick - bestBidPrice7thTick); 
@@ -953,18 +941,24 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(false, spreadIsAboveOrEqualToSpreadThreshhold7thTick);
             assertEquals(0, priceReversalThreshhold7thTick);
 
-            // check that the last order in the list is at the price of 102                            
+            // check that the last buy order in the list is at the price of 102                            
             final Optional<ChildOrder> lastBuyOrderAfter7thTickIs102 = state.getChildOrders().stream()
-                                                                            .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                                            .filter(order6thTick -> order6thTick.getPrice() == 102L)
+                                                                            .filter(order7thTick -> order7thTick.getSide() == Side.BUY)
+                                                                            .filter(order7thTick -> order7thTick.getPrice() == 102L)
                                                                             .reduce((first, second) -> second);
 
-            final ChildOrder lastBoughtPriceIs102After7thTick = lastBuyOrderAfter7thTickIs102.orElseThrow(() -> 
-                                                                                                            new AssertionError("Expected a buy order for 102 but found something else"));
-                                                                
-            // assert that we have created a new buy order at the price of 102
-            assertEquals(102, lastBoughtPriceIs102After7thTick.getPrice());            
-            
+            final ChildOrder lastBoughtPriceAfter7thTickIs102 = lastBuyOrderAfter7thTickIs102.orElseThrow(() -> 
+                                                                new AssertionError("Expected a buy order for 102 but found something else"));
+
+            // check that the last sell order in the list is at the price of 102                            
+            final Optional<ChildOrder> lastSellOrderAfter7thTickIs102 = state.getChildOrders().stream()
+                                                                            .filter(order7thTick -> order7thTick.getSide() == Side.SELL)
+                                                                            .filter(order7thTick -> order7thTick.getPrice() == 102L)
+                                                                            .reduce((first, second) -> second);
+
+            final ChildOrder lastSellPriceAfter7thTickIs102 = lastSellOrderAfter7thTickIs102.orElseThrow(() -> 
+                                                              new AssertionError("Expected a buy order for 102 but found something else"));
+
             final int totalOrdersCountAfter7thTick = container.getState().getChildOrders().size();
 
             final long buyOrderCountAfter7thTick = state.getChildOrders().stream()
@@ -1019,15 +1013,18 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(0, sellOrdersUnFilledQuantityAfter7thTick);
             assertEquals(5, activeChildOrdersAfter7thTick);
             assertEquals(3, cancelledChildOrdersAfter7thTick);
+            assertEquals(102, lastBoughtPriceAfter7thTickIs102.getPrice());            
+            assertEquals(102, lastSellPriceAfter7thTickIs102.getPrice());
 
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 8TH TICK
         // Best Bid 105, Best Ask 109; Spread = 4
         // No more Buy orders should be created as the spread is wide
-        // 1 Sell order should be created for previous buy order of 102 and filled for 105 as the bid and ask price has moved up to the sell threshold
-         // 1 buy order with unfilled quantity should be cancelled       
-        // The state should have 8 child orders with partial fills as in 7th tick; 4 active, 4 cancelled
+        // 1 buy order with unfilled quantity should be cancelled
+        // 1 Sell order should be created for previous buy order of 102 and filled for 105
+        // as the bid and ask price has moved up to the sell threshold     
+        // The state should have 9 child orders with partial fills as in 7th tick; 4 active, 5 cancelled
 
         send(createTick8());
 
@@ -1038,7 +1035,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final AskLevel bestAsk8thTick = state.getAskAt(0);
             final long bestBidPrice8thTick = bestBid8thTick.getPrice();
             final long bestAskPrice8thTick = bestAsk8thTick.getPrice();
-            final long previousBoughtPrice7thTick = lastBoughtPriceIs102After7thTick.getPrice();
+            final long previousBoughtPrice7thTick = lastBoughtPriceAfter7thTickIs102.getPrice();
 
             // Define the spread threshold (in price points)
             final long spread8thTick = Math.abs(bestAskPrice8thTick - bestBidPrice8thTick); 
@@ -1055,17 +1052,14 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(false, spreadIsAboveOrEqualToSpreadThreshhold8thTick);
             assertEquals(7, priceReversalThreshhold8thTick);            
 
-            // check that the last order in the list is at the price of 102                            
+            // check that the last buy order in the list is at the price of 102                            
             final Optional<ChildOrder> lastBuyOrderAfter8thTickIs102 = state.getChildOrders().stream()
-                                                                            .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                                            .filter(order6thTick -> order6thTick.getPrice() == 102L)
+                                                                            .filter(order8thTick -> order8thTick.getSide() == Side.BUY)
+                                                                            .filter(order8thTick -> order8thTick.getPrice() == 102L)
                                                                             .reduce((first, second) -> second);
 
-            final ChildOrder lastBoughtPriceIs102After8thTick = lastBuyOrderAfter8thTickIs102.orElseThrow(() -> 
-                                                                                                            new AssertionError("Expected a buy order for 102 but found something else"));
-
-            // assert that we have created a new buy order at the price of 102
-            assertEquals(102, lastBoughtPriceIs102After8thTick.getPrice());  
+            final ChildOrder lastBoughtPriceAfter8thTickIs102 = lastBuyOrderAfter8thTickIs102.orElseThrow(() -> 
+                                                                new AssertionError("Expected a buy order for 102 but found something else"));
             
             final int totalOrdersCountAfter8thTick = container.getState().getChildOrders().size();
 
@@ -1087,7 +1081,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
 
             final long sellOrderCountAfter8thTick = state.getChildOrders().stream()
                                                          .filter(order -> order.getSide() == Side.SELL)
-                                                         .map(order -> 1L).reduce(0L, Long::sum);  
+                                                         .map(order -> 1L).reduce(0L, Long::sum);
 
             final long sellOrdersTotalOrderedQuantityAfter8thTick = state.getChildOrders().stream()
                                                                          .filter(order -> order.getSide() == Side.SELL)
@@ -1107,6 +1101,24 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                               .filter(order -> order.getState() == 3)
                                                               .map(order -> 1L).reduce(0L, Long::sum);
 
+            Optional<ChildOrder> cancelledOrderPriceAfter8thTickIs102 = state.getChildOrders().stream()
+                                                                             .filter(order -> order.getSide() == Side.BUY)
+                                                                             .filter(order8thTick -> order8thTick.getState() == OrderState.CANCELLED)
+                                                                             .filter(order8thTick -> order8thTick.getPrice() == 102L)
+                                                                             .reduce((first, second) -> second);
+
+            final ChildOrder lastCancelledBuyOrderPriceAfter8thTickIs102 = cancelledOrderPriceAfter8thTickIs102.orElseThrow(() -> 
+                                                                           new AssertionError("Expected the last cancelled buy order price for 102 but found something else"));
+
+            Optional<ChildOrder> lastSellOrderPriceAfter8thTickIs105 = state.getChildOrders().stream()
+                                                                            .filter(order -> order.getSide() == Side.SELL)
+                                                                            .filter(order8thTick -> order8thTick.getPrice() == 105L)
+                                                                            .reduce((first, second) -> second);
+
+            final ChildOrder newSellOrderPriceAfter8thTickIs105 = lastSellOrderPriceAfter8thTickIs105.orElseThrow(() ->
+                                                                  new AssertionError("Expected a new sell order at the price of 105 but found something else"));
+
+
             //Check things like filled quantity, cancelled order count etc...
             assertEquals(9, totalOrdersCountAfter8thTick); // 25/10/2024 - EXPECTED 8 BUT WAS 9
             assertEquals(7, buyOrderCountAfter8thTick);
@@ -1119,13 +1131,16 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(0, sellOrdersUnfilledQuantityAfter8thTick);
             assertEquals(5, activeChildOrdersAfter8thTick);
             assertEquals(4, cancelledOrderCountAfter8thTick);
+            assertEquals(102, lastCancelledBuyOrderPriceAfter8thTickIs102.getPrice());
+            assertEquals(102, lastBoughtPriceAfter8thTickIs102.getPrice());            
+            assertEquals(105, newSellOrderPriceAfter8thTickIs105.getPrice());
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 9TH TICK
-        // Best Bid 106, Best Ask 111; Spread = 5   
-        // The state should have 9 Buy orders with partial fills as in 8th tick; 5 active, 4 cancelled
+        // Best Bid 106, Best Ask 111; Spread = 5  
         // No buy order to be created as the list has 5 active orders and the spread has widened
-        // No new sell orders as there are no more buy order filled quantities to sell
+        // No more sell orders to be created
+        // The state should have 9 Buy orders with partial fills as in 8th tick; 2 sell orders; 5 active, 4 cancelled     
 
         send(createTick9());
 
@@ -1136,7 +1151,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final AskLevel bestAsk9thTick = state.getAskAt(0);
             final long bestBidPrice9thTick = bestBid9thTick.getPrice();
             final long bestAskPrice9thTick = bestAsk9thTick.getPrice();
-            final long previousBoughtPrice8thTick = lastBoughtPriceIs102After8thTick.getPrice();            
+            final long previousBoughtPrice8thTick = lastBoughtPriceAfter8thTickIs102.getPrice();           
 
             // Define the spread threshold (in price points)
             final long spread9thTick = Math.abs(bestAskPrice9thTick - bestBidPrice9thTick); 
@@ -1153,18 +1168,6 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(false, spreadIsAboveOrEqualToSpreadThreshhold9thTick);
             assertEquals(9, priceReversalThreshhold9thTick);
 
-            // check that the last order in the list is at the price of 102                            
-            final Optional<ChildOrder> lastBuyOrderAfter9thTickIs102 = state.getChildOrders().stream()
-                                                                            .filter(order6thTick -> order6thTick.getSide() == Side.BUY)
-                                                                            .filter(order6thTick -> order6thTick.getPrice() == 102L)
-                                                                            .reduce((first, second) -> second);
-
-            final ChildOrder lastBoughtPriceIs102After9thTick = lastBuyOrderAfter9thTickIs102.orElseThrow(() -> 
-                                                                                                            new AssertionError("Expected a buy order for 102 but found something else"));
-
-            // assert that we have created a new buy order at the price of 104
-            assertEquals(102, lastBoughtPriceIs102After9thTick.getPrice());  
-
             final int totalOrdersCountAfter9thTick = container.getState().getChildOrders().size();
 
             final long buyOrderCountAfter9thTick = state.getChildOrders().stream()
@@ -1180,7 +1183,6 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                                   .filter(order -> order.getSide() == Side.BUY)                
                                                                   .map(ChildOrder::getFilledQuantity)
                                                                   .reduce(Long::sum).orElse(0L);
-
 
             final long buyOrdersUnfilledQuantityAfter9thTick = buyOrdersTotalOrderedQuantityAfter9thTick - buyOrdersFilledQuantityAfter9thTick;
 
@@ -1206,6 +1208,15 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
                                                               .filter(order -> order.getState() == 3)
                                                               .map(order -> 1L).reduce(0L, Long::sum);
 
+            // check that the last order in the list is at the price of 102                            
+            final Optional<ChildOrder> lastBuyOrderAfter9thTickIs102 = state.getChildOrders().stream()
+                                                                            .filter(order9thTick -> order9thTick.getSide() == Side.BUY)
+                                                                            .filter(order9thTick -> order9thTick.getPrice() == 102L)
+                                                                            .reduce((first, second) -> second);
+
+            final ChildOrder lastBoughtPriceAfter9thTickIs102 = lastBuyOrderAfter9thTickIs102.orElseThrow(() -> 
+                                                                new AssertionError("Expected a buy order for 102 but found something else"));
+
             //Check things like filled quantity, cancelled order count etc...
             assertEquals(9, totalOrdersCountAfter9thTick); 
             assertEquals(7, buyOrderCountAfter9thTick);
@@ -1218,6 +1229,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(0, sellOrdersUnfilledQuantityAfter9thTick);
             assertEquals(5, activeChildOrdersAfter9thTick);
             assertEquals(4, cancelledOrderCountAfter9thTick);
+            assertEquals(102, lastBoughtPriceAfter9thTickIs102.getPrice());            
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER THE 10TH TICK
@@ -1235,7 +1247,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             final AskLevel bestAsk10thTick = state.getAskAt(0);
             final long bestBidPrice10thTick = bestBid10thTick.getPrice();
             final long bestAskPrice10thTick = bestAsk10thTick.getPrice();
-            final long previousBoughtPrice9thTick = lastBoughtPriceIs102After9thTick.getPrice();
+            final long previousBoughtPrice9thTick = lastBoughtPriceAfter9thTickIs102.getPrice();
 
             // Define the spread threshold (in price points)
             final long spread10thTick = Math.abs(bestAskPrice10thTick - bestBidPrice10thTick); 
@@ -1250,7 +1262,7 @@ public class MyProfitAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(102, previousBoughtPrice9thTick);
             assertEquals(true, spreadIsBelowOrEqualToSpreadThreshhold10thTick);
             assertEquals(false, spreadIsAboveOrEqualToSpreadThreshhold10thTick);
-            assertEquals(9, priceReversalThreshhold10thTick);            
+            assertEquals(9, priceReversalThreshhold10thTick);          
 
             final int totalOrdersCountAfter10thTick = container.getState().getChildOrders().size();
 
