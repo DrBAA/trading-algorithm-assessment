@@ -1,0 +1,47 @@
+### EXPLANATION OF MYALGOLOGIC.JAVA AND MYPROFITALGO.JAVA CLASSES
+
+# FIRST OBJECTIVE
+
+### 1.  MYALGOLOGIC.JAVA
+This is a trading Algo that creates and cancels child orders based on certain market conditions.
+
+
+
+### 2. MYALGOLOGICBACKTEST.JAVA
+### This class contains all the tests for MyAlgoLogic.java class
+
+
+
+## TO RUN THE TESTS, USE EITHER OF THE BELOW CODE FROM A WINDOWS MACHINE
+
+### WITH MAVEN INSTALLED
+
+mvn clean test --projects algo-exercise/getting-started
+mvn -Dtest=MyAlgoBackTest test --projects algo-exercise/getting-started
+
+### IF NO MAVEN INSTALLED
+./mvnw clean test --projects algo-exercise/getting-started
+./mvnw -Dtest=MyAlgoBackTest test --projects algo-exercise/getting-started
+
+
+# STRETCH OBJECTIVE
+
+### 3. MYPROFITALGO.JAVA
+This is a trading algo that can make money buy buying shares when the order book is cheaper, and selling them when the order book is more expensive. 
+
+
+### 4. MYPROFITALGOBACKTEST.JAVA
+This class contains all the tests for MyProfitAlgoLogic.java class
+
+
+
+### TO RUN THE TESTS, USE EITHER OF THE BELOW CODE FROM A WINDOWS MACHINE 
+
+### WITH MAVEN INSTALLED
+
+mvn clean test --projects algo-exercise/getting-started
+mvn -Dtest=MyProfitAlgoBackTest test --projects algo-exercise/getting-started
+
+### IF NO MAVEN INSTALLED
+./mvnw clean test --projects algo-exercise/getting-started
+./mvnw -Dtest=MyProfitAlgoBackTest test --projects algo-exercise/getting-started
