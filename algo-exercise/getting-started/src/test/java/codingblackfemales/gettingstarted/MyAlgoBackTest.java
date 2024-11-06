@@ -323,6 +323,11 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             final int totalOrdersCountAfter1stTick = state.getChildOrders().size();
 
+            final long sellOrderCountAfter1stTick = state.getChildOrders().stream()
+                                                         .filter(order -> order.getSide() == Side.SELL)
+                                                         .map(order -> 1L).reduce(0L, Long::sum); //sets a default value of 0 for when
+                                                                                                  //no elements match the filter condition
+
             final long totalOrderedQuantityAfter1stTick = state.getChildOrders().stream()
                                                                .map(ChildOrder::getQuantity)
                                                                .reduce (Long::sum).orElse(0L); //.get();
@@ -335,22 +340,26 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             final int activeChildOrdersAfter1stTick = state.getActiveChildOrders().size();
 
+            final int cancelledChildOrdersAfter1stTick = totalOrdersCountAfter1stTick - activeChildOrdersAfter1stTick;
 
   
             // assert to check things like total number of child orders created, total ordered quantity, filled quantity, total filled orders,
             // unfilled quantity, total active child orders and total cancelled orders                      
             
             assertEquals(5, totalOrdersCountAfter1stTick);
+            assertEquals(0, sellOrderCountAfter1stTick);            
             assertEquals(1000, totalOrderedQuantityAfter1stTick);
             assertEquals(0, filledQuantityAfter1stTick);
             assertEquals(1000, unfilledQuantityAfter1stTick);
-            assertEquals(5, activeChildOrdersAfter1stTick);      
+            assertEquals(5, activeChildOrdersAfter1stTick);
+            assertEquals(0, cancelledChildOrdersAfter1stTick);     
             assertEquals(98, lastBoughtPriceIs98After1stTick.getPrice());            
 
 
         // TESTING THE ALGO'S BEHAVIOUR AFTER 2ND TICK 
         // Best Bid = 95, Best Ask = 98, Spread = 3 points
-        // Now new buy orders should be created as the list has 5 active orders
+        // Now new buy orders should be created as the list has 5 active orders.
+        // No orders should be cancelled as conditions not met
         // Some previous orders should be filled as the Ask price has moved towards our buy limit price
 
         send(createTick2());
@@ -396,6 +405,11 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             final int totalOrdersCountAfter2ndTick = state.getChildOrders().size();
 
+            final long sellOrderCountAfte2ndTick = state.getChildOrders().stream()
+                                                         .filter(order -> order.getSide() == Side.SELL)
+                                                         .map(order -> 1L).reduce(0L, Long::sum); //sets a default value of 0 for when
+                                                                                                  //no elements match the filter condition           
+
             final long totalOrderedQuantityAfter2ndTick = state.getChildOrders().stream()
                                                                .map(ChildOrder::getQuantity)
                                                                .reduce (Long::sum).orElse(0L);
@@ -408,15 +422,19 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             final int activeChildOrdersAfter2ndTick = state.getActiveChildOrders().size();
 
+            final int cancelledChildOrdersAfter2ndTick = totalOrdersCountAfter2ndTick - activeChildOrdersAfter2ndTick;
 
 
             // assert to check things like total number of child orders created, total ordered quantity, filled quantity, total filled orders,
             // unfilled quantity, total active child orders and total cancelled orders            
             assertEquals(5, totalOrdersCountAfter2ndTick);
+            assertEquals(0, sellOrderCountAfte2ndTick);
             assertEquals(1000, totalOrderedQuantityAfter2ndTick);            
             assertEquals(501, filledQuantityAfter2ndTick);
             assertEquals(499, unfilledQuantityAfter2ndTick);
-            assertEquals(5, activeChildOrdersAfter2ndTick);
+            assertEquals(5, activeChildOrdersAfter1stTick); // active orders count before 2nd tick
+            assertEquals(5, activeChildOrdersAfter2ndTick); // confirms that no new orders have been created after the 3rd tick
+            assertEquals(0, cancelledChildOrdersAfter2ndTick);
             assertEquals(98, lastBoughtPriceIs98After2ndTick.getPrice());            
 
 
@@ -472,6 +490,11 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             // unfilled quantity, total filled orders, total active child orders and total cancelled orders
 
             final int totalOrdersCountAfter3rdTick = state.getChildOrders().size();
+
+            final long sellOrderCountAfter3rdTick = state.getChildOrders().stream()
+                                                         .filter(order -> order.getSide() == Side.SELL)
+                                                         .map(order -> 1L).reduce(0L, Long::sum); //sets a default value of 0 for when
+                                                     //no elements match the filter condition
             
             final long totalNumberOfFilledOrdersAfter3rdTick = state.getChildOrders().stream()
                                                                     .filter(childOrder -> childOrder.getFilledQuantity() > 0)
@@ -492,16 +515,17 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             final int cancelledChildOrdersAfter3rdTick = totalOrdersCountAfter3rdTick - activeChildOrdersAfter3rdTick;
 
 
-
             // assert to check things like total number of child orders created, total ordered quantity, filled quantity, total filled orders,
             // unfilled quantity, total active child orders and total cancelled orders
             
             assertEquals(5, totalOrdersCountAfter3rdTick);
+            assertEquals(0, sellOrderCountAfter3rdTick);
             assertEquals(1000, totalOrderedQuantityAfter3rdTick);            
             assertEquals(501, filledQuantityAfter3rdTick);
             assertEquals(499, unfilledQuantityAfter3rdTick);
             assertEquals(3, totalNumberOfFilledOrdersAfter3rdTick);
-            assertEquals(5, activeChildOrdersAfter3rdTick);                 
+            assertEquals(5, activeChildOrdersAfter2ndTick); // active orders count before 3rd tick             
+            assertEquals(5, activeChildOrdersAfter3rdTick); // confirms that no new orders have been created after the 3rd tick
             assertEquals(0, cancelledChildOrdersAfter3rdTick);
             assertEquals(98, lastBoughtPriceIs98After3rdTick.getPrice()); 
 
@@ -560,6 +584,11 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
             final int totalOrdersCountAfter4thTick = state.getChildOrders().size();
 
+            final long sellOrderCountAfter4thTick = state.getChildOrders().stream()
+                                                         .filter(order -> order.getSide() == Side.SELL)
+                                                         .map(order -> 1L).reduce(0L, Long::sum); //sets a default value of 0 for when
+                                                                                                  //no elements match the filter condition            
+
             final long totalNumberOfFilledOrdersAfter4thTick = state.getChildOrders().stream()
                                                                     .filter(childOrder -> childOrder.getFilledQuantity() > 0)
                                                                     .count();
@@ -591,12 +620,15 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             // unfilled quantity, total active child orders and total cancelled orders                                                                                   
 
             assertEquals(5, totalOrdersCountAfter4thTick);
+            assertEquals(0, sellOrderCountAfter4thTick); 
             assertEquals(1000, totalOrderedQuantityAfter4thTick);            
             assertEquals(501, filledQuantityAfter4thTick);
             assertEquals(3, totalNumberOfFilledOrdersAfter4thTick);            
             assertEquals(499, unfilledQuantityAfter4thTick);
-            assertEquals(2, activeChildOrdersAfter4thTick);                                 
-            assertEquals(3, cancelledChildOrdersAfter4thTick);
+            assertEquals(5, activeChildOrdersAfter3rdTick); // number of active child orders before the 4th tick           
+            assertEquals(2, activeChildOrdersAfter4thTick); // confirms that no new orders were created after the 4th tick                                 
+            assertEquals(0, cancelledChildOrdersAfter3rdTick); // cancelled orders before tick 4
+            assertEquals(3, cancelledChildOrdersAfter4thTick); // confirms that 3 orders were cancelled after the 4th tick
             assertEquals(98, lastBoughtPriceIs98After4thTick.getPrice());
 
             // assert to check that the last cancelled order is at the price of 98
@@ -650,6 +682,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
                                                                  .reduce((first, second) -> second)
                                                                  .orElseThrow(() ->
                                                                   new AssertionError("Expected to find the last buy order in the list but found something else"));
+                                                                  
 
             // Get the total number of child orders created, total ordered quantity, filled quantity, total filled orders,
             // unfilled quantity, total active child orders and total cancelled orders
@@ -687,8 +720,10 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(1600, totalBuyOrderedQuantityAfter5thTick); // 17/10/2024 expected 1200 but was 1600
             assertEquals(501, totalBuyOrderFilledQuantityAfter5thTick);
             assertEquals(1099, totalBuyOrderUnfilledQuantityAfter5thTick); // 17/10/2024 expected 699 but was 1099
-            assertEquals(5, activeChildOrdersAfter5thTick); // 17/10/2024 expected 3 but was 5
-            assertEquals(3, cancelledOrderCountAfter5thTick);
+            assertEquals(2, activeChildOrdersAfter4thTick); // active orders count before 5th tick             
+            assertEquals(5, activeChildOrdersAfter5thTick); // confirms that 3 new orders have been created after the 5th tick 
+            assertEquals(3, cancelledChildOrdersAfter4thTick); // cancelled orders before the 5th tick
+            assertEquals(3, cancelledOrderCountAfter5thTick); // confirms that no more orders were cancelled after the 5th tick
             assertEquals(101, newBuyOrderIs101After5thTick.getPrice()); 
 
 
@@ -781,8 +816,10 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(2200, totalBuyOrderedQuantityAfter6thTick);
             assertEquals(501, totalBuyOrderFilledQuantityAfter6thTick); 
             assertEquals(1699, totalBuyOrderUnfilledQuantityAfter6thTick);
-            assertEquals(5, activeChildOrdersAfter6thTick);             
-            assertEquals(6, cancelledChildOrdersAfter6thTick);
+            assertEquals(5, activeChildOrdersAfter5thTick); // active orders count before 6th tick
+            assertEquals(3, cancelledOrderCountAfter5thTick); // cancelled order count before 6th tick
+            assertEquals(6, cancelledChildOrdersAfter6thTick); // confirms that 3 more orders were cancelled after the 6th tick
+            assertEquals(5, activeChildOrdersAfter6thTick); // confirms that 3 new orders have been created after the 6th tick as 3 orders were cancelled after 6th tick
             assertEquals(103, newBuyOrderIs103After6thTick.getPrice());
 
             // assert to check that the last cancelled order is at the price of 101           
@@ -872,9 +909,11 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(0, sellOrderCountAfter7thTick);                
             assertEquals(2200, totalBuyOrderedQuantityAfter7thTick);            
             assertEquals(501, totalBuyOrderFilledQuantityAfter7thTick);
-            assertEquals(1699, totalBuyOrderUnfilledQuantityAfter7thTick);           
-            assertEquals(5, activeChildOrdersAfter7thTick); 
-            assertEquals(6, cancelledChildOrdersAfter7thTick);
+            assertEquals(1699, totalBuyOrderUnfilledQuantityAfter7thTick); 
+            assertEquals(5, activeChildOrdersAfter6thTick); // active child orders before 7th tick
+            assertEquals(5, activeChildOrdersAfter7thTick); // confirms that now new orders created after 7th tick
+            assertEquals(6, cancelledChildOrdersAfter6thTick); // cancelled orders before 7th tick
+            assertEquals(6, cancelledChildOrdersAfter7thTick); // confirms that no more orders were cancelled after the 7th tick
             assertEquals(103, lastBoughtPriceAfter7thTickIs103.getPrice());             
 
 
@@ -962,8 +1001,10 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(2200, totalBuyOrderedQuantityAfter8thTick);            
             assertEquals(501, totalBuyOrderFilledQuantityAfter8thTick); 
             assertEquals(1699, totalBuyOrderUnfilledQuantityAfter8thTick); 
-            assertEquals(5, activeChildOrdersAfter8thTick);
-            assertEquals(6, cancelledChildOrdersAfter8thTick);
+            assertEquals(5, activeChildOrdersAfter7thTick); // active child orders before 8th tick
+            assertEquals(5, activeChildOrdersAfter8thTick); // confirms that now new orders created after 8th tick
+            assertEquals(6, cancelledChildOrdersAfter7thTick); // cancelled orders before 8th tick 
+            assertEquals(6, cancelledChildOrdersAfter8thTick); // confirms that no more orders were cancelled after the 8th tick
             assertEquals(103, lastBoughtPriceAfter8thTickIs103.getPrice());             
 
 
@@ -1057,8 +1098,11 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
             assertEquals(2200, totalBuyOrderedQuantityAfter9thTick);            
             assertEquals(501, totalBuyOrderFilledQuantityAfter9thTick); 
             assertEquals(1699, totalBuyOrderUnfilledQuantityAfter9thTick); 
-            assertEquals(2, activeChildOrdersAfter9thTick); 
-            assertEquals(9, cancelledChildOrdersAfter9thTick); 
+            assertEquals(5, activeChildOrdersAfter8thTick); // active child orders before 9th tick
+            assertEquals(6, cancelledChildOrdersAfter8thTick); // cancelled child orders before 9th tick         
+            assertEquals(9, cancelledChildOrdersAfter9thTick);  // confirms 3 orders were cancelled orders after 9th tick           
+            assertEquals(2, activeChildOrdersAfter9thTick); // confirms that now new orders created after 9th tick     
+
 
             // assert to check that the last cancelled order is at the price of 103
             assertEquals(103, lastCancelledOrderAfter9thTickIs103.getPrice());
